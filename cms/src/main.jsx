@@ -6,8 +6,8 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import SignUp from './pages/signup/signup.jsx'
-import Login from './pages/login/login.jsx'
+import SignUp from './pages/AccountManagement/signup/signup.jsx'
+import Login from './pages//AccountManagement/login/login.jsx'
 import Dashboard from './pages/Student/dashboard.jsx'
 
 
