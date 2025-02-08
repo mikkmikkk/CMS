@@ -18,7 +18,7 @@ export default function Signup() {
         <div className="flex gap-2 mb-4">
           <button
             className={`flex-1 p-3 border rounded-lg text-sm font-medium flex items-center justify-center gap-2 ${
-              role === "student" ? "bg-[#5D4037] text-white" : "bg-gray-200 text-gray-700"
+              role === "student" ? "bg-[#340013] text-white" : "bg-gray-200 text-gray-700"
             }`}
             onClick={() => setRole("student")}
           >
@@ -26,7 +26,7 @@ export default function Signup() {
           </button>
           <button
             className={`flex-1 p-3 border rounded-lg text-sm font-medium flex items-center justify-center gap-2 ${
-              role === "faculty" ? "bg-[#5D4037] text-white" : "bg-gray-200 text-gray-700"
+              role === "faculty" ? "bg-[#340013] text-white" : "bg-gray-200 text-gray-700"
             }`}
             onClick={() => setRole("faculty")}
           >
@@ -42,12 +42,12 @@ export default function Signup() {
         <input type="password" placeholder="Password (8+ characters)" className="w-full p-2 border rounded-md mt-3" />
         <input type="password" placeholder="Confirm Password" className="w-full p-2 border rounded-md mt-3" />
 
-        <button className="w-full mt-4 bg-[#5D4037] text-white p-2 rounded-md text-sm font-medium">Create Account</button>
+        <button className="w-full mt-4 bg-[#340013] text-white p-2 rounded-md text-sm font-medium">Create Account</button>
 
         <p className="text-sm text-gray-600 text-center mt-3">
           Already have an account?
           <a href="#"
-            className="text-[#5D4037] font-medium hover:underline"
+            className="text-[#340013] font-medium hover:underline"
             onClick={handlelogin}// Trigger navigation to signup
           >Sign Up</a>
         </p>

@@ -6,14 +6,16 @@ export default function Dashboard() {
       
       <div className="flex justify-between items-center">
         <img src="/logo.png" alt="Logo" className="h-12" /> {/* Replace with actual logo */}
-        <nav className="flex gap-6">
-          <a href="#" className="text-gray-900 font-medium">Home</a>
-          <a href="#" className="text-gray-900 font-medium">Request</a>
-          <a href="#" className="text-gray-900 font-medium">Profile</a>
+        <nav className="flex items-center gap-6"> 
+          <div className="flex gap-6"> {/* Added a div to group the links */}
+            <a href="#" className="text-gray-900 font-medium">Home</a>
+            <a href="#" className="text-gray-900 font-medium">Request</a>
+            <a href="#" className="text-gray-900 font-medium">Profile</a>
+          </div>
+          <button className="bg-[#340013] text-white px-4 py-2 rounded-md text-sm font-semibold">
+            Logout
+          </button>
         </nav>
-        <button className="bg-[#4a192e] text-white px-4 py-2 rounded-md text-sm font-semibold">
-          Logout
-        </button>
       </div>
 
       {/* Welcome Text */}
@@ -30,7 +32,7 @@ export default function Dashboard() {
         <div className="border p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold">Notifications</h2>
           <div className="flex items-start gap-3 mt-4">
-            <div className="w-6 h-6 bg-[#4a192e] rounded-md"></div>
+            <div className="w-6 h-6 bg-[#340013] rounded-md"></div>
             <div>
               <p className="font-semibold">Rescheduled Session</p>
               <p className="text-gray-600 text-sm">
