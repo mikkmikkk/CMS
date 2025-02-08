@@ -25,7 +25,7 @@ export default function Login() {
         <div className="flex gap-2 mb-4">
           <button
             className={`flex-1 p-3 border rounded-lg text-sm font-medium flex items-center justify-center gap-2 ${
-              role === "student" ? "bg-[#5D4037] text-white" : "bg-gray-200 text-gray-700"
+              role === "student" ? "bg-[#340013] text-white" : "bg-gray-200 text-gray-700"
             }`}
             onClick={() => setRole("student")}
           >
@@ -33,7 +33,7 @@ export default function Login() {
           </button>
           <button
             className={`flex-1 p-3 border rounded-lg text-sm font-medium flex items-center justify-center gap-2 ${
-              role === "faculty" ? "bg-[#5D4037] text-white" : "bg-gray-200 text-gray-700"
+              role === "faculty" ? "bg-[#340013] text-white" : "bg-gray-200 text-gray-700"
             }`}
             onClick={() => setRole("faculty")}
           >
@@ -62,7 +62,7 @@ export default function Login() {
         </div>
 
         {/* Login Button */}
-        <button className="w-full mt-4 bg-[#5D4037] text-white p-2 rounded-md text-sm font-medium" onClick={handleDashboard}>
+        <button className="w-full mt-4 bg-[#340013] text-white p-2 rounded-md text-sm font-medium" onClick={handleDashboard}>
           Login
         </button>
 
