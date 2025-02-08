@@ -6,14 +6,16 @@ export default function Dashboard() {
       
       <div className="flex justify-between items-center">
         <img src="/logo.png" alt="Logo" className="h-12" /> {/* Replace with actual logo */}
-        <nav className="flex gap-6">
-          <a href="#" className="text-gray-900 font-medium">Home</a>
-          <a href="#" className="text-gray-900 font-medium">Request</a>
-          <a href="#" className="text-gray-900 font-medium">Profile</a>
+        <nav className="flex items-center gap-6"> 
+          <div className="flex gap-6"> {/* Added a div to group the links */}
+            <a href="#" className="text-gray-900 font-medium">Home</a>
+            <a href="#" className="text-gray-900 font-medium">Request</a>
+            <a href="#" className="text-gray-900 font-medium">Profile</a>
+          </div>
+          <button className="bg-[#340013] text-white px-4 py-2 rounded-md text-sm font-semibold">
+            Logout
+          </button>
         </nav>
-        <button className="bg-[#340013] text-white px-4 py-2 rounded-md text-sm font-semibold">
-          Logout
-        </button>
       </div>
 
       {/* Welcome Text */}
