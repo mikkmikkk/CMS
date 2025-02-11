@@ -6,10 +6,13 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import SignUp from './pages/signup/signup.jsx'
-import Login from './pages/login/login.jsx'
-import Dashboard from './pages/Student/dashboard.jsx'
-import Admin from './pages/admin/admindash.jsx';
+
+import SignUp from './pages/AccountManagement/signup/signup.jsx'
+import Login from './pages//AccountManagement/login/login.jsx'
+import Dashboard from './pages/Student/Dashboard.jsx'
+import ProfilePage from './pages/Admin/adminprofile.jsx';
+import AdminDashboard from './pages/Admin/Admindashboard.jsx'
+import AdminProfilePage from './pages/Admin/adminprofile.jsx';
 
 
 
@@ -31,9 +34,19 @@ const router = createBrowserRouter([
     element: <Dashboard />,
   },
   {
-    path: "/admindash",
-    element: <Admin />,
+
+    path: "/profile",
+    element: <ProfilePage />,
   },
+  {
+    path: "/Admindashboard",
+    element: <AdminDashboard />,
+  },
+  {
+    path: "/adminprofile",
+    element: <AdminProfilePage />,
+  }
+
   
   
 ]);
