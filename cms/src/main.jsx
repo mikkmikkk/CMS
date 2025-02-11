@@ -9,6 +9,7 @@ import {
 import SignUp from './pages/signup/signup.jsx'
 import Login from './pages/login/login.jsx'
 import Dashboard from './pages/Student/dashboard.jsx'
+import Admin from './pages/admin/admindash.jsx';
 
 
 
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Dashboard />,
+  },
+  {
+    path: "/admindash",
+    element: <Admin />,
   },
   
   
