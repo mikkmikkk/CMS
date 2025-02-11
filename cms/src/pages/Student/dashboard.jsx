@@ -1,28 +1,47 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+  const navigate = useNavigate(); // Ensure navigate is called here
+
+  const handleLogout = () => {
+    navigate("/"); // Navigate to the signup page
+  };
+
+  const handleHome = () => {
+    navigate("/Dashboard");
+  };
+
+  const handleRequest = () => {
+    navigate("/Request");
+  };
+
+  const handleProfile = () => {
+    navigate("/Profile");
+  };
+
   return (
-    <div className="min-h-screen bg-white p-6">
-      
-      <div className="flex justify-between items-center">
-        <img src="/logo.png" alt="Logo" className="h-12" /> {/* Replace with actual logo */}
-        <nav className="flex items-center gap-6"> 
-          <div className="flex gap-6"> {/* Added a div to group the links */}
-            <a href="#" className="text-gray-900 font-medium">Home</a>
-            <a href="#" className="text-gray-900 font-medium">Request</a>
-            <a href="#" className="text-gray-900 font-medium">Profile</a>
+    <div className="min-h-screen bg-white">
+      {/* Navigation Bar */}
+      <div className="w-full bg-white pt-10 px-16 flex justify-between items-center" style={{ height: '72px' }}>
+        <img src="/src/assets/img/cmslogo.png" alt="Logo" className="w-16 h-16" />
+        <nav className="flex items-center gap-6">
+          <div className="flex gap-6">
+            <a href="#" onClick={handleHome} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">Home</a>
+            <a href="#" onClick={handleRequest} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">Request</a>
+            <a href="#" onClick={handleProfile} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">Profile</a>
           </div>
-          <button className="bg-[#340013] text-white px-4 py-2 rounded-md text-sm font-semibold">
+          <button onClick={handleLogout} className="bg-[#3A0323] hover:bg-[#2a021a] text-white px-6 py-3 rounded-md transition-colors">
             Logout
           </button>
         </nav>
       </div>
-
+      
       {/* Welcome Text */}
-      <h1 className="text-2xl font-bold mt-6">Welcome Charles Leclerc</h1>
+      <h1 className="text-2xl font-bold mt-16 px-16">Welcome Charles Leclerc</h1>
 
       {/* Content Grid */}
-      <div className="grid grid-cols-2 gap-6 mt-6">
+      <div className="grid grid-cols-2 gap-6 mt-6 px-16">
         {/* Schedule Card */}
         <div className="border p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold">Schedule</h2>
