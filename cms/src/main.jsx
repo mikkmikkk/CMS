@@ -6,6 +6,7 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+
 import SignUp from './pages/AccountManagement/signup/signup.jsx'
 import Login from './pages//AccountManagement/login/login.jsx'
 import Dashboard from './pages/Student/Dashboard.jsx'
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
     element: <Dashboard />,
   },
   {
+
     path: "/profile",
     element: <ProfilePage />,
   },
@@ -44,6 +46,7 @@ const router = createBrowserRouter([
     path: "/adminprofile",
     element: <AdminProfilePage />,
   }
+
   
   
 ]);
