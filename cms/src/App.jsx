@@ -41,11 +41,12 @@ function App() {
         {/* Left Content */}
         <div className="w-1/2 pr-12">
           <h1 className="text-7xl font-bold text-[#3A0323] leading-tight mb-8">
-            We Will Help <br /> You To Improve <br /> Your Mental Health
+          Empowering You on Your Mental Wellness Journey
           </h1>
           <p className="text-gray-600 text-2xl leading-relaxed">
-            Eu sit proin amet quis malesuada vitae elit. Vel consectetur nibh
-            quis ullamcorper quis.
+          CMS provides a secure and supportive platform for counselors and users to connect, track progress, and achieve lasting well-being. 
+          Schedule appointments, 
+          and communicate confidently, all in one place.
           </p>
         </div>
 
