@@ -1,16 +1,21 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
+import { useNavigate } from "react-router-dom";
+import { login } from "../../../firebase/authService"; // Import the login function
 
 export default function Login() {
   const [role, setRole] = useState("student");
-  const navigate = useNavigate(); // Initialize navigate hook
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleCreateAccount = () => {
-    navigate("/signup"); // Navigate to the signup page
-  };
-
-  const handleDashboard = () => {
-    navigate("/dashboard"); // Navigate to the signup page
+  const handleLogin = async () => {
+    const result = await login(email, password);
+    if (result.success) {
+      navigate("/dashboard");
+    } else {
+      setError(result.message);
+    }
   };
 
   return (
@@ -18,8 +23,10 @@ export default function Login() {
       <div className="bg-white p-6 rounded-lg shadow-md w-96">
         <h2 className="text-2xl font-semibold text-gray-900">Login</h2>
         <p className="text-gray-600 text-sm mb-4">
-          Choose your role and enter your credentials to access the system
+          Choose your role and enter your credentials to access the system.
         </p>
+
+        {error && <p className="text-red-500 text-sm">{error}</p>}
 
         {/* Role Selection */}
         <div className="flex gap-2 mb-4">
@@ -46,11 +53,15 @@ export default function Login() {
           type="email"
           placeholder="Email"
           className="w-full p-2 border rounded-md mt-3"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <input
           type="password"
-          placeholder="Password (8+ characters)"
+          placeholder="Password (6+ characters)"
           className="w-full p-2 border rounded-md mt-3"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
 
         {/* Remember Me Checkbox */}
@@ -62,19 +73,22 @@ export default function Login() {
         </div>
 
         {/* Login Button */}
-        <button className="w-full mt-4 bg-[#340013] text-white p-2 rounded-md text-sm font-medium" onClick={handleDashboard}>
+        <button
+          className="w-full mt-4 bg-[#340013] text-white p-2 rounded-md text-sm font-medium"
+          onClick={handleLogin}
+        >
           Login
         </button>
 
         {/* Forgot Password & Create Account Links */}
         <div className="flex justify-between text-sm text-gray-600 mt-4">
           <a href="#" className="hover:underline">Forgot password?</a>
-          <a href="#"
-            className="text-[#5D4037] font-medium hover:underline"
-            onClick={handleCreateAccount }// Trigger navigation to signup
+          <span
+            className="text-[#340013] font-medium hover:underline cursor-pointer"
+            onClick={() => navigate("/signup")}
           >
             Create Account
-          </a>
+          </span>
         </div>
       </div>
     </div>
