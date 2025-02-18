@@ -10,9 +10,9 @@ import {
 import SignUp from './pages/AccountManagement/signup/signup.jsx'
 import Login from './pages//AccountManagement/login/login.jsx'
 import Dashboard from './pages/Student/Dashboard.jsx'
-import ProfilePage from './pages/Admin/adminprofile.jsx';
 import AdminDashboard from './pages/Admin/Admindashboard.jsx'
-import AdminProfilePage from './pages/Admin/adminprofile.jsx';
+import AdminNavbar from './pages/ui/adminnavbar.jsx';
+import Reports from './pages/Admin/Reports.jsx';
 
 
 
@@ -34,7 +34,6 @@ const router = createBrowserRouter([
     element: <Dashboard />,
   },
   {
-
     path: "/profile",
     element: <ProfilePage />,
   },
@@ -42,9 +41,14 @@ const router = createBrowserRouter([
     path: "/Admindashboard",
     element: <AdminDashboard />,
   },
+  
   {
-    path: "/adminprofile",
-    element: <AdminProfilePage />,
+    path: "/adminnavbar",
+    element: <AdminNavbar />,
+  },
+  {
+    path: "/reports",
+    element: <Reports />,
   }
 
   
