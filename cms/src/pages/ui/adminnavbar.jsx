@@ -9,7 +9,7 @@ export default function AdminNavbar() {
   }
 
   return (
-    <div className="w-full bg-white pt-18 px-16 flex justify-between items-center border-b shadow-md" style={{ height: '72px' }}>
+    <div className="w-full bg-white pt-18 px-16 flex justify-between items-center" style={{ height: '72px' }}>
       <img src="/src/assets/img/cmslogo.png" alt="Logo" className="w-16 h-16" />
       <nav className="flex items-center gap-6">
         <div className="flex gap-6">
