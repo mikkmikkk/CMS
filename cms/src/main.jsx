@@ -1,6 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
+import App from './Landingpage.jsx'
+
+
 import './index.css'
 import {
   createBrowserRouter,
@@ -13,6 +15,7 @@ import Dashboard from './pages/Student/Dashboard.jsx'
 import AdminDashboard from './pages/Admin/Admindashboard.jsx'
 import AdminNavbar from './pages/UI/adminnavbar.jsx';
 import Reports from './pages/Admin/Reports.jsx';
+import SubmittedFormsManagement from './pages/Admin/submission.jsx';
 
 
 
@@ -38,7 +41,10 @@ const router = createBrowserRouter([
     path: "/Admindashboard",
     element: <AdminDashboard />,
   },
-  
+  {
+    path: "/SubmittedFormsManagement",
+    element: <SubmittedFormsManagement />,
+  },
   {
     path: "/adminnavbar",
     element: <AdminNavbar />,

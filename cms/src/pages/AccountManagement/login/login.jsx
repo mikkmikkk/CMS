@@ -1,20 +1,56 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../../../firebase/authService"; // Import the login function
+import { login } from "../../../firebase/authService";
 
 export default function Login() {
+  // State Management
   const [role, setRole] = useState("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Handle Role Selection
+  const handleRoleSelect = (selectedRole) => {
+    setRole(selectedRole);
+    setEmail(selectedRole === "admin" ? "admin" : "");
+    setError("");
+  };
+
+  // Enhanced Login Handler
   const handleLogin = async () => {
-    const result = await login(email, password);
-    if (result.success) {
-      navigate("/dashboard");
-    } else {
-      setError(result.message);
+    try {
+      setIsLoading(true);
+      setError("");
+
+      // Input validation
+      if (!email || !password) {
+        setError("Please fill in all fields");
+        return;
+      }
+
+      const result = await login(email, password);
+      
+      if (result.success) {
+        // Store user session data
+        localStorage.setItem("userRole", result.isAdmin ? "admin" : role);
+        localStorage.setItem("userEmail", email);
+
+        // Route based on user role
+        if (result.isAdmin) {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/dashboard");
+        }
+      } else {
+        setError(result.message);
+      }
+    } catch (error) {
+      setError("An unexpected error occurred. Please try again.");
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -26,69 +62,84 @@ export default function Login() {
           Choose your role and enter your credentials to access the system.
         </p>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm mb-4 p-2 bg-red-50 rounded">
+            {error}
+          </p>
+        )}
 
-        {/* Role Selection */}
+        {/* Enhanced Role Selection */}
         <div className="flex gap-2 mb-4">
           <button
-            className={`flex-1 p-3 border rounded-lg text-sm font-medium flex items-center justify-center gap-2 ${
+            className={`flex-1 p-3 border rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
               role === "student" ? "bg-[#340013] text-white" : "bg-gray-200 text-gray-700"
             }`}
-            onClick={() => setRole("student")}
+            onClick={() => handleRoleSelect("student")}
           >
             🎓 Student
           </button>
           <button
-            className={`flex-1 p-3 border rounded-lg text-sm font-medium flex items-center justify-center gap-2 ${
+            className={`flex-1 p-3 border rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
               role === "faculty" ? "bg-[#340013] text-white" : "bg-gray-200 text-gray-700"
             }`}
-            onClick={() => setRole("faculty")}
+            onClick={() => handleRoleSelect("faculty")}
           >
             👤 Faculty
           </button>
         </div>
 
-        {/* Email & Password Fields */}
+        {/* Enhanced Input Fields */}
         <input
           type="email"
           placeholder="Email"
-          className="w-full p-2 border rounded-md mt-3"
+          className="w-full p-2 border rounded-md mt-3 focus:outline-none focus:ring-2 focus:ring-[#340013]"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          disabled={role === "admin"}
         />
         <input
           type="password"
           placeholder="Password (6+ characters)"
-          className="w-full p-2 border rounded-md mt-3"
+          className="w-full p-2 border rounded-md mt-3 focus:outline-none focus:ring-2 focus:ring-[#340013]"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
         {/* Remember Me Checkbox */}
         <div className="flex items-center mt-3">
-          <input type="checkbox" id="rememberMe" className="mr-2" />
+          <input 
+            type="checkbox" 
+            id="rememberMe" 
+            className="mr-2 accent-[#340013]" 
+          />
           <label htmlFor="rememberMe" className="text-sm text-gray-600">
             Remember me
           </label>
         </div>
 
-        {/* Login Button */}
+        {/* Enhanced Login Button */}
         <button
-          className="w-full mt-4 bg-[#340013] text-white p-2 rounded-md text-sm font-medium"
+          className={`w-full mt-4 bg-[#340013] text-white p-2 rounded-md text-sm font-medium 
+            transition-all hover:bg-[#2a0010] ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
           onClick={handleLogin}
+          disabled={isLoading}
         >
-          Login
+          {isLoading ? "Logging in..." : "Login"}
         </button>
 
-        {/* Forgot Password & Create Account Links */}
+        {/* Conditional Links */}
         <div className="flex justify-between text-sm text-gray-600 mt-4">
-          <a href="#" className="hover:underline">Forgot password?</a>
-          <span
-            className="text-[#340013] font-medium hover:underline cursor-pointer"
-            onClick={() => navigate("/signup")}
-          >
-            Create Account
-          </span>
+          <a href="#" className="hover:underline">
+            Forgot password?
+          </a>
+          {role !== "admin" && (
+            <span
+              className="text-[#340013] font-medium hover:underline cursor-pointer"
+              onClick={() => navigate("/signup")}
+            >
+              Create Account
+            </span>
+          )}
         </div>
       </div>
     </div>
