@@ -1,40 +1,27 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-import './index.css';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './Landingpage.jsx'
+
+
+import './index.css'
 import {
   createBrowserRouter,
   RouterProvider,
-  Navigate
 } from "react-router-dom";
 
-<<<<<<< HEAD
-// Import components
-import SignUp from './pages/AccountManagement/signup/signup.jsx';
-import Login from './pages//AccountManagement/login/login.jsx';
-import Dashboard from './pages/Student/Dashboard.jsx';
-import ProfilePage from './pages/Admin/adminprofile.jsx';
-import AdminDashboard from './pages/Admin/Admindashboard.jsx';
-import AdminProfilePage from './pages/Admin/adminprofile.jsx';
+import SignUp from './pages/AccountManagement/signup/signup.jsx'
+import Login from './pages//AccountManagement/login/login.jsx'
+import Dashboard from './pages/Student/Dashboard.jsx'
+import AdminDashboard from './pages/Admin/Admindashboard.jsx'
+import AdminNavbar from './pages/UI/adminnavbar.jsx';
+import Reports from './pages/Admin/Reports.jsx';
 
-// Protected Route Component
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const userRole = localStorage.getItem('userRole');
-  const isAuthenticated = localStorage.getItem('userEmail');
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
 
-  // Temporarily bypass role checking
-  return children;
-};
-
-// Route Configuration
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/login" replace />,
+    element: <App />,
   },
   {
     path: "/signup",
@@ -46,75 +33,25 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: (
-      <ProtectedRoute allowedRoles={['student', 'faculty']}>
-        <Dashboard />
-      </ProtectedRoute>
-    ),
+    element: <Dashboard />,
   },
-  {
-    path: "/profile",
-    element: (
-      <ProtectedRoute allowedRoles={['student', 'faculty']}>
-        <ProfilePage />
-      </ProtectedRoute>
-    ),
-  },
+
   {
     path: "/Admindashboard",
-    element: (
-      <ProtectedRoute allowedRoles={['admin']}>
-        <AdminDashboard />
-      </ProtectedRoute>
-    ),
+    element: <AdminDashboard />,
   },
+  
   {
-    path: "/adminprofile",
-    element: (
-      <ProtectedRoute allowedRoles={['admin']}>
-        <AdminProfilePage />
-      </ProtectedRoute>
-    ),
+    path: "/adminnavbar",
+    element: <AdminNavbar />,
   },
-  {
-    path: "*",
-    element: (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">404 - Page Not Found</h1>
-        <p className="text-gray-600 mb-4">The page you're looking for doesn't exist.</p>
-        <button 
-          onClick={() => window.location.href = '/login'}
-          className="bg-[#340013] text-white px-4 py-2 rounded-md hover:bg-[#2a0010]"
-        >
-          Return to Login
-        </button>
-      </div>
-    ),
-  },
+
+  
+  
 ]);
 
-// Root Render
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <RouterProvider router={router} />
   </React.StrictMode>,
-);
-
-/* 
-// Preserved for future implementation
-const unauthorizedRoute = {
-  path: "/unauthorized",
-  element: (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-2xl font-bold text-red-600 mb-4">Unauthorized Access</h1>
-      <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
-      <button 
-        onClick={() => window.location.href = '/login'}
-        className="bg-[#340013] text-white px-4 py-2 rounded-md hover:bg-[#2a0010]"
-      >
-        Return to Login
-      </button>
-    </div>
-  ),
-}
-*/
+)
