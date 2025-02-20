@@ -16,7 +16,7 @@ export default function AdminNavbar() {
         <div className="flex gap-6">
           <a onClick={() => navigate("/Admindashboard")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">Dashboard</a>
           <a onClick={() => navigate("/Reports")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">Reports</a>
-          <a onClick={() => navigate("/Request")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">Submission</a>
+          <a onClick={() => navigate("/SubmittedFormsManagement")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">Submission</a>
           <a onClick={() => navigate("/Schedule")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">Schedule</a>
           <a onClick={() => navigate("/History")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">History</a>
           <a onClick={() => navigate("/Profile")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">Profile</a>
