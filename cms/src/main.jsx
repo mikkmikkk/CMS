@@ -8,6 +8,7 @@ import {
   Navigate
 } from "react-router-dom";
 
+<<<<<<< HEAD
 // Import components
 import SignUp from './pages/AccountManagement/signup/signup.jsx';
 import Login from './pages//AccountManagement/login/login.jsx';
