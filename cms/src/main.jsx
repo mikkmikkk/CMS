@@ -25,10 +25,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(userRole)) {
-    return <Navigate to="/unauthorized" replace />;
-  }
-
+  // Temporarily bypass role checking
   return children;
 };
 
@@ -79,21 +76,6 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/unauthorized",
-    element: (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">Unauthorized Access</h1>
-        <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
-        <button 
-          onClick={() => window.location.href = '/login'}
-          className="bg-[#340013] text-white px-4 py-2 rounded-md hover:bg-[#2a0010]"
-        >
-          Return to Login
-        </button>
-      </div>
-    ),
-  },
-  {
     path: "*",
     element: (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -116,3 +98,22 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <RouterProvider router={router} />
   </React.StrictMode>,
 );
+
+/* 
+// Preserved for future implementation
+const unauthorizedRoute = {
+  path: "/unauthorized",
+  element: (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <h1 className="text-2xl font-bold text-red-600 mb-4">Unauthorized Access</h1>
+      <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+      <button 
+        onClick={() => window.location.href = '/login'}
+        className="bg-[#340013] text-white px-4 py-2 rounded-md hover:bg-[#2a0010]"
+      >
+        Return to Login
+      </button>
+    </div>
+  ),
+}
+*/
