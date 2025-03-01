@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Dashboard() {
-  const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
+export default function FacultyDashboard() {
+  const navigate = useNavigate(); // Ensure navigate is called here
 
   const handleLogout = () => {
-    navigate("/"); // Redirect to home
+    navigate("/"); // Navigate to the signup page
   };
 
   const handleHome = () => {
@@ -19,14 +18,6 @@ export default function Dashboard() {
 
   const handleProfile = () => {
     navigate("/Profile");
-  };
-
-  const handleAccept = () => {
-    console.log("Session Accepted");
-  };
-
-  const handleCancel = () => {
-    console.log("Session Cancelled");
   };
 
   return (
@@ -45,9 +36,9 @@ export default function Dashboard() {
           </button>
         </nav>
       </div>
-
+      
       {/* Welcome Text */}
-      <h1 className="text-2xl font-bold mt-16 px-16">Welcome Bolo!</h1>
+      <h1 className="text-2xl font-bold mt-16 px-16">Welcome Micah Espinosa</h1>
 
       {/* Content Grid */}
       <div className="grid grid-cols-2 gap-6 mt-6 px-16">
@@ -67,20 +58,6 @@ export default function Dashboard() {
                 Rescheduled for November 12, 2024 <br />
                 Time: 3:00 PM
               </p>
-              <div className="flex gap-3 mt-2">
-                <button
-                  onClick={handleAccept}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-                >
-                  Accept
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
             </div>
           </div>
         </div>

@@ -37,6 +37,14 @@ export default function Signup() {
 
     
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
+
+      <img 
+  src="src/assets/img/cmslogo.png"
+  alt="Logo" 
+  className="absolute top-4 left-4 w-12 h-12 md:w-16 md:h-16"
+/>
+
+
       <div className="bg-white p-6 rounded-lg shadow-md w-96">
         <h2 className="text-2xl font-semibold text-gray-900">Create an account</h2>
         {error && <p className="text-red-500 text-sm">{error}</p>}

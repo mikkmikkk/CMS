@@ -11,11 +11,18 @@ import {
 
 import SignUp from './pages/AccountManagement/signup/signup.jsx'
 import Login from './pages//AccountManagement/login/login.jsx'
-import Dashboard from './pages/Student/Dashboard.jsx'
+import Dashboard from './pages/Student/dashboard.jsx'
 import AdminDashboard from './pages/Admin/Admindashboard.jsx'
 import AdminNavbar from './pages/UI/adminnavbar.jsx';
-import Reports from './pages/Admin/Reports.jsx';
+import Reports from './pages/Admin/reports.jsx';
 import SubmittedFormsManagement from './pages/Admin/submission.jsx';
+import Request from './pages/Student/request.jsx';
+import Faculty from './pages/faculty/facultydash.jsx';
+import ProfilePage from './pages/ui/Profile.jsx';
+import Forms from './pages/faculty/forms.jsx';
+import History from './pages/Admin/history.jsx';
+import AProfile from './pages/Admin/adprofile.jsx';
+
 
 
 
@@ -50,7 +57,36 @@ const router = createBrowserRouter([
     element: <AdminNavbar />,
   },
 
-  
+  {
+    path: "/request",
+    element: <Request />,
+  },
+  {
+    path: "/facultydash",
+    element: <Faculty />,
+  },
+
+  {
+    path: "/Profile",
+    element: <ProfilePage />,
+  },
+  {
+    path: "/forms",
+    element: <Forms />,
+  },
+ 
+  {
+    path: "/reports",
+    element: <Reports />,
+  },
+  {
+    path: "/history",
+    element: <History />,
+  },
+  {
+    path: "/aprofile",
+    element: <AProfile />,
+  },
   
 ]);
 

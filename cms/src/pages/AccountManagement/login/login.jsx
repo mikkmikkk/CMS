@@ -18,26 +18,23 @@ export default function Login() {
     setError("");
   };
 
-  // Enhanced Login Handler
+  // Handle Login
   const handleLogin = async () => {
     try {
       setIsLoading(true);
       setError("");
 
-      // Input validation
       if (!email || !password) {
         setError("Please fill in all fields");
         return;
       }
 
       const result = await login(email, password);
-      
+
       if (result.success) {
-        // Store user session data
         localStorage.setItem("userRole", result.isAdmin ? "admin" : role);
         localStorage.setItem("userEmail", email);
 
-        // Route based on user role
         if (result.isAdmin) {
           navigate("/admin-dashboard");
         } else {
@@ -55,7 +52,14 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="relative flex justify-center items-center min-h-screen bg-gray-100">
+      {/* Logo positioned at the top-left */}
+      <img 
+        src="src/assets/img/cmslogo.png"
+        alt="Logo" 
+        className="absolute top-4 left-4 w-12 h-12 md:w-16 md:h-16"
+      />
+
       <div className="bg-white p-6 rounded-lg shadow-md w-96">
         <h2 className="text-2xl font-semibold text-gray-900">Login</h2>
         <p className="text-gray-600 text-sm mb-4">
@@ -68,7 +72,7 @@ export default function Login() {
           </p>
         )}
 
-        {/* Enhanced Role Selection */}
+        {/* Role Selection */}
         <div className="flex gap-2 mb-4">
           <button
             className={`flex-1 p-3 border rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
@@ -88,7 +92,7 @@ export default function Login() {
           </button>
         </div>
 
-        {/* Enhanced Input Fields */}
+        {/* Input Fields */}
         <input
           type="email"
           placeholder="Email"
@@ -105,7 +109,7 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* Remember Me Checkbox */}
+        {/* Remember Me */}
         <div className="flex items-center mt-3">
           <input 
             type="checkbox" 
@@ -117,7 +121,7 @@ export default function Login() {
           </label>
         </div>
 
-        {/* Enhanced Login Button */}
+        {/* Login Button */}
         <button
           className={`w-full mt-4 bg-[#340013] text-white p-2 rounded-md text-sm font-medium 
             transition-all hover:bg-[#2a0010] ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
@@ -127,7 +131,7 @@ export default function Login() {
           {isLoading ? "Logging in..." : "Login"}
         </button>
 
-        {/* Conditional Links */}
+        {/* Links */}
         <div className="flex justify-between text-sm text-gray-600 mt-4">
           <a href="#" className="hover:underline">
             Forgot password?

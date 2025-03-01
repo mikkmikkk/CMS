@@ -19,7 +19,7 @@ export default function AdminNavbar() {
           <a onClick={() => navigate("/SubmittedFormsManagement")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">Submission</a>
           <a onClick={() => navigate("/Schedule")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">Schedule</a>
           <a onClick={() => navigate("/History")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">History</a>
-          <a onClick={() => navigate("/Profile")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">Profile</a>
+          <a onClick={() => navigate("/AProfile")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer">Profile</a>
         </div>
         
         <button onClick={() => navigate("/")} className="bg-[#3A0323] hover:bg-[#2a021a] text-white px-6 py-3 rounded-md transition-colors">
