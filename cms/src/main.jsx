@@ -23,6 +23,7 @@ import Forms from './pages/faculty/forms.jsx';
 import History from './pages/Admin/history.jsx';
 import AProfile from './pages/Admin/adprofile.jsx';
 import { ProfileProvider } from './pages/ui/ProfileContext.jsx';
+import Schedule from './pages/Admin/schedule.jsx';
 
 
 
@@ -75,7 +76,10 @@ const router = createBrowserRouter([
     path: "/forms",
     element: <Forms />,
   },
- 
+  {
+    path: "/schedule",
+    element: <Schedule />,
+  },
   {
     path: "/reports",
     element: <Reports />,

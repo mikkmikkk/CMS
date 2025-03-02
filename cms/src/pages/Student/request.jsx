@@ -50,7 +50,7 @@ export default function Request() {
   const prevStep = () => step > 0 && setStep(step - 1);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
     
       <StudentNavbar />
 
