@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdminNavbar from '../UI/adminnavbar';
+import AdminNavbar from '../ui/adminnavbar';
 import { Chart } from 'primereact/chart';
 
 function AdminDashboard() {

@@ -1,5 +1,5 @@
 import React from 'react';
-import AdminNavbar from '../UI/adminnavbar';
+import AdminNavbar from '../ui/adminnavbar';
 
 function Reports() {
   return (

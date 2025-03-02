@@ -22,6 +22,7 @@ import ProfilePage from './pages/ui/Profile.jsx';
 import Forms from './pages/faculty/forms.jsx';
 import History from './pages/Admin/history.jsx';
 import AProfile from './pages/Admin/adprofile.jsx';
+import { ProfileProvider } from './pages/ui/ProfileContext.jsx';
 
 
 
@@ -92,6 +93,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+    <ProfileProvider>
     <RouterProvider router={router} />
+    </ProfileProvider>
   </React.StrictMode>,
 )
