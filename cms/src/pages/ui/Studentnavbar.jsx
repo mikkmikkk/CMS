@@ -4,7 +4,7 @@ import { useProfile } from "./ProfileContext";
 
 export default function StudentNavbar() {
   const navigate = useNavigate();
-  const { openProfile } = useProfile(); // ✅ Correctly use openProfile()
+  const { openProfile } = useProfile(); // 
 
   return (
     <div className="w-full bg-white pt-10 px-16 flex justify-between items-center" style={{ height: "72px" }}>
