@@ -13,7 +13,7 @@ import SignUp from './pages/AccountManagement/signup/signup.jsx'
 import Login from './pages//AccountManagement/login/login.jsx'
 import Dashboard from './pages/Student/dashboard.jsx'
 import AdminDashboard from './pages/Admin/Admindashboard.jsx'
-import AdminNavbar from './pages/UI/adminnavbar.jsx';
+import AdminNavbar from './pages/ui/adminnavbar.jsx';
 import Reports from './pages/Admin/reports.jsx';
 import SubmittedFormsManagement from './pages/Admin/submission.jsx';
 import Request from './pages/Student/request.jsx';
@@ -22,6 +22,8 @@ import ProfilePage from './pages/ui/Profile.jsx';
 import Forms from './pages/faculty/forms.jsx';
 import History from './pages/Admin/history.jsx';
 import AProfile from './pages/Admin/adprofile.jsx';
+import { ProfileProvider } from './pages/ui/ProfileContext.jsx';
+import Schedule from './pages/Admin/schedule.jsx';
 
 
 
@@ -74,7 +76,10 @@ const router = createBrowserRouter([
     path: "/forms",
     element: <Forms />,
   },
- 
+  {
+    path: "/schedule",
+    element: <Schedule />,
+  },
   {
     path: "/reports",
     element: <Reports />,
@@ -92,6 +97,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+    <ProfileProvider>
     <RouterProvider router={router} />
+    </ProfileProvider>
   </React.StrictMode>,
 )

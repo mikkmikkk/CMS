@@ -1,5 +1,5 @@
 import React from 'react';
-import AdminNavbar from '../UI/adminnavbar';
+import AdminNavbar from '../ui/adminnavbar';
 import Profile from '../ui/Profile';        
 
 function AProfile() {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AdminNavbar from '../UI/adminnavbar';
+import AdminNavbar from '../ui/adminnavbar';
 
 function History() {
   const [selectedStudent, setSelectedStudent] = useState(null);
