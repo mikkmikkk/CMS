@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";  // 
 import { useNavigate } from "react-router-dom";
+import { useProfile } from "../ui/ProfileContext"; // 
 
 export default function FacultyDashboard() {
-  const navigate = useNavigate(); // Ensure navigate is called here
+  const navigate = useNavigate();
+  const { openProfile } = useProfile(); // 
+  const [showModal, setShowModal] = useState(false); // 
 
   const handleLogout = () => {
-    navigate("/"); // Navigate to the signup page
+    navigate("/");
   };
 
   const handleHome = () => {
@@ -14,10 +17,6 @@ export default function FacultyDashboard() {
 
   const handleRequest = () => {
     navigate("/Request");
-  };
-
-  const handleProfile = () => {
-    navigate("/Profile");
   };
 
   return (
@@ -29,7 +28,7 @@ export default function FacultyDashboard() {
           <div className="flex gap-6">
             <a href="#" onClick={handleHome} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">Home</a>
             <a href="#" onClick={handleRequest} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">Request</a>
-            <a href="#" onClick={handleProfile} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">Profile</a>
+            <a href="#" onClick={openProfile} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">Profile</a> {/* ✅ Fix: Now opens modal */}
           </div>
           <button onClick={handleLogout} className="bg-[#3A0323] hover:bg-[#2a021a] text-white px-6 py-3 rounded-md transition-colors">
             Logout
@@ -65,3 +64,4 @@ export default function FacultyDashboard() {
     </div>
   );
 }
+

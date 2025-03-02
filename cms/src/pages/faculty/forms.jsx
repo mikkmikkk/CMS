@@ -2,6 +2,7 @@ import { useState } from "react";
 
 export default function Forms() {
   const [step, setStep] = useState(0);
+  const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     clientName: "",
     courseYear: "",
@@ -89,3 +90,4 @@ export default function Forms() {
     </div>
   );
 }
+

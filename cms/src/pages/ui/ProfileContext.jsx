@@ -12,7 +12,7 @@ export const ProfileProvider = ({ children }) => {
   return (
     <ProfileContext.Provider value={{ isProfileOpen, openProfile, closeProfile }}>
       {children}
-      {isProfileOpen && <ProfilePage onClose={closeProfile} />} {/* ✅ Pass close function */}
+      {isProfileOpen && <ProfilePage onClose={closeProfile} />} 
     </ProfileContext.Provider>
   );
 };

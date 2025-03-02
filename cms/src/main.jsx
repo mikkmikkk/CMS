@@ -13,7 +13,7 @@ import SignUp from './pages/AccountManagement/signup/signup.jsx'
 import Login from './pages//AccountManagement/login/login.jsx'
 import Dashboard from './pages/Student/dashboard.jsx'
 import AdminDashboard from './pages/Admin/Admindashboard.jsx'
-import AdminNavbar from './pages/UI/adminnavbar.jsx';
+import AdminNavbar from './pages/ui/adminnavbar.jsx';
 import Reports from './pages/Admin/reports.jsx';
 import SubmittedFormsManagement from './pages/Admin/submission.jsx';
 import Request from './pages/Student/request.jsx';
