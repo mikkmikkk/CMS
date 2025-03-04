@@ -15,7 +15,7 @@ import Dashboard from './pages/Student/dashboard.jsx'
 import AdminDashboard from './pages/Admin/Admindashboard.jsx'
 import AdminNavbar from './pages/ui/adminnavbar.jsx';
 import Reports from './pages/Admin/reports.jsx';
-import SubmittedFormsManagement from './pages/Admin/submission.jsx';
+import SubmittedFormsManagement from './pages/Admin/SubmittedFormsManagement.jsx';
 import Request from './pages/Student/request.jsx';
 import Faculty from './pages/faculty/facultydash.jsx';
 import ProfilePage from './pages/ui/Profile.jsx';

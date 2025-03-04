@@ -11,7 +11,7 @@ export default function FacultyNavbar() {
       <img src="/src/assets/img/cmslogo.png" alt="Logo" className="w-16 h-16" />
       <nav className="flex items-center gap-6">
         <div className="flex gap-6">
-          <a href="#" onClick={() => navigate("/Dashboard")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">
+          <a href="#" onClick={() => navigate("/Facultydash")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">
             Home
           </a>
           <a href="#" onClick={() => navigate("/Forms")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">

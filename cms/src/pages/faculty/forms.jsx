@@ -50,7 +50,7 @@ export default function Forms() {
       <FacultyNavbar />
       
       <div className="max-w-2xl mx-auto mt-20 space-y-6">
-        <h2 className="text-2xl font-bold text-center">Student Initial/Routine Interview</h2>
+        <h2 className="text-2xl font-bold text-center">Referral form</h2>
 
         {/* Progress Bar */}
         <div className="relative w-full bg-gray-200 h-2 rounded-full mb-6">

@@ -36,7 +36,7 @@ export default function Dashboard() {
       < StudentNavbar />
 
       {/* Welcome Text */}
-      <h1 className="text-2xl font-bold mt-16 px-16">Welcome Bolo!</h1>
+      <h1 className="text-2xl font-bold mt-16 px-16">Welcome Micah Espunsoa</h1>
 
       {/* Content Grid */}
       <div className="grid grid-cols-2 gap-6 mt-6 px-16">
