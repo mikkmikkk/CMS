@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminNavbar from '../ui/adminnavbar';
+import { getStudentInterviewForms, updateFormStatus } from '../../firebase/firestoreService';
 import { getStudentInterviewForms, updateFormStatus } from '../../firebase/firestoreService';
 
 function SubmittedFormsManagement() {
+  const [forms, setForms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -224,8 +228,25 @@ function SubmittedFormsManagement() {
 
   return (
     <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
       <AdminNavbar />
 
+      {error && (
+        <div className="max-w-8xl mx-auto mt-4 px-6">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <p>{error}</p>
+            <button 
+              onClick={fetchForms}
+              className="underline ml-2"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-8xl mx-auto px-6 pt-12">
+        <h1 className="text-2xl font-bold mb-6">Non-Referral</h1>
       {error && (
         <div className="max-w-8xl mx-auto mt-4 px-6">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -279,11 +300,35 @@ function SubmittedFormsManagement() {
                   </td>
                 </tr>
               )}
+              {nonReferralForms.length > 0 ? (
+                nonReferralForms.map((student) => (
+                  <tr
+                    key={student.id}
+                    className="border-b cursor-pointer hover:bg-gray-200"
+                    onClick={() => openModal(student)}
+                  >
+                    <td className="py-3 px-4">{student.name}</td>
+                    <td className="py-3 px-4">{student.course}</td>
+                    <td className="py-3 px-4">{student.year}</td>
+                    <td className="py-3 px-4">{student.type}</td>
+                    <td className="py-3 px-4">{student.referral}</td>
+                    <td className="py-3 px-4">{student.status}</td>
+                    <td className="py-3 px-4">{student.remarks}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="py-4 text-center text-gray-500">
+                    No non-referral submissions found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
+      <div className="max-w-8xl mx-auto px-6 pt-12">
       <div className="max-w-8xl mx-auto px-6 pt-12">
         <h1 className="text-2xl font-bold mb-4">Referral</h1>
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -323,6 +368,29 @@ function SubmittedFormsManagement() {
                   </td>
                 </tr>
               )}
+              {referralForms.length > 0 ? (
+                referralForms.map((student) => (
+                  <tr
+                    key={student.id}
+                    className="border-b cursor-pointer hover:bg-gray-200"
+                    onClick={() => openModal(student)}
+                  >
+                    <td className="py-3 px-4">{student.name}</td>
+                    <td className="py-3 px-4">{student.course}</td>
+                    <td className="py-3 px-4">{student.year}</td>
+                    <td className="py-3 px-4">{student.type}</td>
+                    <td className="py-3 px-4">{student.referral}</td>
+                    <td className="py-3 px-4">{student.status}</td>
+                    <td className="py-3 px-4">{student.remarks}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="py-4 text-center text-gray-500">
+                    No referral submissions found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -331,6 +399,8 @@ function SubmittedFormsManagement() {
       {/* Student Details Modal */}
       {isModalOpen && selectedStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white w-11/12 max-w-2xl rounded-lg shadow-lg p-6 relative max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">View History Details</h2>
           <div className="bg-white w-11/12 max-w-2xl rounded-lg shadow-lg p-6 relative max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">View History Details</h2>
             
@@ -348,38 +418,61 @@ function SubmittedFormsManagement() {
               <p><strong>Emergency contact person and no.:</strong> {selectedStudent.details.emergencyContact}</p>
               <p><strong>Date:</strong> {selectedStudent.details.date}</p>
               <p><strong>Time:</strong> {selectedStudent.details.time}</p>
+              <p><strong>Mode of Counseling:</strong> {selectedStudent.details.mode}</p>
+              <p><strong>Full name:</strong> {selectedStudent.details.fullName}</p>
+              <p><strong>UIC Email Address:</strong> {selectedStudent.details.email}</p>
+              <p><strong>Course & Year:</strong> {selectedStudent.details.courseYear}</p>
+              <p><strong>College Department:</strong> {selectedStudent.details.department}</p>
+              <p><strong>UIC ID:</strong> {selectedStudent.details.id}</p>
+              <p><strong>Date of Birth:</strong> {selectedStudent.details.dob}</p>
+              <p><strong>Age/Sex:</strong> {selectedStudent.details.ageSex}</p>
+              <p><strong>Contact No.:</strong> {selectedStudent.details.contact}</p>
+              <p><strong>Present Address:</strong> {selectedStudent.details.address}</p>
+              <p><strong>Emergency contact person and no.:</strong> {selectedStudent.details.emergencyContact}</p>
+              <p><strong>Date:</strong> {selectedStudent.details.date}</p>
+              <p><strong>Time:</strong> {selectedStudent.details.time}</p>
 
+              <h3 className="text-lg font-bold mt-4">Personal</h3>
               <h3 className="text-lg font-bold mt-4">Personal</h3>
               <ul>
                 {selectedStudent.details.personal.map((item, index) => (
+                  <li key={index}>• {item}</li>
                   <li key={index}>• {item}</li>
                 ))}
               </ul>
 
               <h3 className="text-lg font-bold mt-4">Interpersonal</h3>
+              <h3 className="text-lg font-bold mt-4">Interpersonal</h3>
               <ul>
                 {selectedStudent.details.interpersonal.map((item, index) => (
+                  <li key={index}>• {item}</li>
                   <li key={index}>• {item}</li>
                 ))}
               </ul>
 
               <h3 className="text-lg font-bold mt-4">Grief/Bereavement</h3>
+              <h3 className="text-lg font-bold mt-4">Grief/Bereavement</h3>
               <ul>
                 {selectedStudent.details.grief.map((item, index) => (
+                  <li key={index}>• {item}</li>
                   <li key={index}>• {item}</li>
                 ))}
               </ul>
 
               <h3 className="text-lg font-bold mt-4">Academics</h3>
+              <h3 className="text-lg font-bold mt-4">Academics</h3>
               <ul>
                 {selectedStudent.details.academics.map((item, index) => (
+                  <li key={index}>• {item}</li>
                   <li key={index}>• {item}</li>
                 ))}
               </ul>
 
               <h3 className="text-lg font-bold mt-4">Family</h3>
+              <h3 className="text-lg font-bold mt-4">Family</h3>
               <ul>
                 {selectedStudent.details.family.map((item, index) => (
+                  <li key={index}>• {item}</li>
                   <li key={index}>• {item}</li>
                 ))}
               </ul>
