@@ -17,7 +17,7 @@ function Schedule() {
       <AdminNavbar />
 
      
-      <div className="max-w-[1200px] mx-auto mt-12 px-10 pt-24">
+      <div className="max-w-8xl mx-auto mt- px-6 pt-12">
         <h1 className="text-4xl font-bold mb-8">Admin Schedule</h1>
 
 

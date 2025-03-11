@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import ProfilePage from "./Profile"; // ✅ Fix import path if necessary
+import ProfilePage from "./Profile"; // Ensure the path is correct.
 
 const ProfileContext = createContext();
 
@@ -12,10 +12,9 @@ export const ProfileProvider = ({ children }) => {
   return (
     <ProfileContext.Provider value={{ isProfileOpen, openProfile, closeProfile }}>
       {children}
-      {isProfileOpen && <ProfilePage onClose={closeProfile} />} 
+      {isProfileOpen && <ProfilePage onClose={closeProfile} />}
     </ProfileContext.Provider>
   );
 };
 
 export const useProfile = () => useContext(ProfileContext);
-

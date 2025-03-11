@@ -129,7 +129,7 @@ function Reports() {
       <AdminNavbar />
 
       {/* Dashboard Content */}
-      <div className="max-w-7xl mx-auto mt-5 px-6 pt-24">
+      <div className="max-w-8xl mx-auto mt- px-6 pt-12">
         <h1 className="text-3xl font-bold mb-6">Counseling Reports</h1>
 
         {/* Filters */}
