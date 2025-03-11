@@ -15,7 +15,7 @@ import Dashboard from './pages/Student/dashboard.jsx'
 import AdminDashboard from './pages/Admin/Admindashboard.jsx'
 import AdminNavbar from './pages/ui/adminnavbar.jsx';
 import Reports from './pages/Admin/reports.jsx';
-import SubmittedFormsManagement from './pages/Admin/submission.jsx';
+import SubmittedFormsManagement from './pages/Admin/SubmittedFormsManagement.jsx';
 import Request from './pages/Student/request.jsx';
 import Faculty from './pages/faculty/facultydash.jsx';
 import ProfilePage from './pages/ui/Profile.jsx';
@@ -24,6 +24,7 @@ import History from './pages/Admin/history.jsx';
 import AProfile from './pages/Admin/adprofile.jsx';
 import { ProfileProvider } from './pages/ui/ProfileContext.jsx';
 import Schedule from './pages/Admin/schedule.jsx';
+import FacultyNavbar from './pages/ui/facultynavbar.jsx';
 
 
 
@@ -91,6 +92,10 @@ const router = createBrowserRouter([
   {
     path: "/aprofile",
     element: <AProfile />,
+  },
+  {
+    path: "/facultynavbar",
+    element: <FacultyNavbar />,
   },
   
 ]);

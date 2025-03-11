@@ -1,25 +1,23 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { auth, db } from "./firebase-config";
+import { auth, db } from "./firebase-config"; // Ensure correct Firebase config is imported
 
 /**
  * User Registration Function
  * @param {string} email - User email
  * @param {string} password - User password
  * @param {string} role - User role (student/faculty)
- * @param {string} firstName - User first name
- * @param {string} lastName - User last name
+ * @param {Object} userData - User details based on role (name, course, yearLevel, section for student or department for faculty)
  * @returns {Object} Registration result
  */
-export const signUp = async (email, password, role, firstName, lastName) => {
+export const signUp = async (email, password, role, userData) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Store user details in Firestore
-    await setDoc(doc(db, role, user.uid), {
-      firstName,
-      lastName,
+    // Use the correct collection names and ensure all data is correctly formatted
+    await setDoc(doc(db, role === 'student' ? "students" : "faculty", user.uid), {
+      ...userData,
       email,
       role,
       createdAt: new Date().toISOString(),
@@ -42,31 +40,27 @@ export const signUp = async (email, password, role, firstName, lastName) => {
 
 /**
  * Enhanced Login Function with Admin Support
- * @param {string} email - User email or admin username
- * @param {string} password - User/admin password
+ * @param {string} email - User email
+ * @param {string} password - User password
  * @returns {Object} Login result
  */
 export const login = async (email, password) => {
   try {
-    // Check for admin login
+    // Admin login check
     if (email === "admin") {
       const adminDoc = doc(db, "Admin", "ID");
       const adminSnapshot = await getDoc(adminDoc);
-      
-      if (adminSnapshot.exists()) {
-        const adminData = adminSnapshot.data();
-        if (adminData.email === "admin" && adminData.password === password) {
-          // Admin login successful
-          return { 
-            success: true, 
-            isAdmin: true,
-            user: {
-              role: 'admin',
-              email: 'admin'
-            },
-            message: "Admin login successful"
-          };
-        }
+
+      if (adminSnapshot.exists() && adminSnapshot.data().password === password) {
+        return { 
+          success: true, 
+          isAdmin: true,
+          user: {
+            role: 'admin',
+            email: 'admin'
+          },
+          message: "Admin login successful"
+        };
       }
       return { 
         success: false, 
@@ -74,23 +68,37 @@ export const login = async (email, password) => {
       };
     }
 
-    // Regular user login
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const userDoc = await getDoc(doc(db, "User", userCredential.user.uid));
-    const userData = userDoc.data();
+    const user = userCredential.user;
 
-    // Update last login
-    await setDoc(doc(db, "User", userCredential.user.uid), {
-      ...userData,
-      lastLogin: new Date().toISOString()
-    }, { merge: true });
+    // Check if the user is a student
+    const studentDoc = await getDoc(doc(db, "students", user.uid));
+    if (studentDoc.exists()) {
+      return { 
+        success: true, 
+        isAdmin: false,
+        user: userCredential.user,
+        userData: studentDoc.data(),
+        message: "Login successful"
+      };
+    }
 
+    // Check if the user is faculty
+    const facultyDoc = await getDoc(doc(db, "faculty", user.uid));
+    if (facultyDoc.exists()) {
+      return { 
+        success: true, 
+        isAdmin: false,
+        user: userCredential.user,
+        userData: facultyDoc.data(),
+        message: "Login successful"
+      };
+    }
+
+    // If no document is found
     return { 
-      success: true, 
-      isAdmin: false,
-      user: userCredential.user,
-      userData: userData,
-      message: "Login successful"
+      success: false, 
+      message: "User document not found in Firestore" 
     };
 
   } catch (error) {
@@ -101,6 +109,7 @@ export const login = async (email, password) => {
     };
   }
 };
+
 
 /**
  * Session Management Helper
@@ -130,6 +139,9 @@ const handleError = (error) => {
   return errorMessages[error.code] || error.message;
 };
 
+/**
+ * Logout Function
+ */
 export const logout = async () => {
   try {
     await auth.signOut();
