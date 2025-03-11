@@ -2,18 +2,24 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../ui/ProfileContext";
 import FacultyNavbar from "../ui/facultynavbar";
+import { submitFacultyReferral } from "../../firebase/facultyReferralService";
 
 export default function Forms() {
   const navigate = useNavigate();
   const { openProfile } = useProfile();
   const [step, setStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     studentName: "",
     studentID: "",
+    date: new Date().toISOString().split('T')[0], // Today's date
     facultyName: "",
     department: "",
     referralReason: "",
-    concerns: []
+    concerns: [],
+    otherConcerns: "",
+    observations: "",
+    referredBy: ""
   });
 
   const steps = [
@@ -43,6 +49,26 @@ export default function Forms() {
         : prevData.concerns.filter((c) => c !== value);
       return { ...prevData, concerns };
     });
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      const result = await submitFacultyReferral(formData);
+      
+      if (result.success) {
+        alert("Referral submitted successfully!");
+        navigate("/facultydash"); // Redirect to dashboard or another page
+      } else {
+        alert(`Failed to submit referral: ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Error submitting referral:", error);
+      alert("An error occurred while submitting the referral. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -76,9 +102,9 @@ export default function Forms() {
               <label className="block mb-2 font-semibold">Client's Name</label>
               <input type="text" name="studentName" value={formData.studentName} onChange={handleChange} placeholder="Enter student name" className="w-full p-2 border border-gray-300 rounded-md mb-4" />
               <label className="block mb-2 font-semibold">Course/Year</label>
-              <input type="text" name="studentID" value={formData.studentID} onChange={handleChange} placeholder="Enter student ID" className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+              <input type="text" name="studentID" value={formData.studentID} onChange={handleChange} placeholder="Enter course and year" className="w-full p-2 border border-gray-300 rounded-md mb-4" />
               <label className="block mb-2 font-semibold">Date</label>
-              <input type="text" name="studentID" value={formData.studentID} onChange={handleChange} placeholder="Enter student ID" className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+              <input type="date" name="date" value={formData.date} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
             </div>
           )}
 
@@ -104,51 +130,85 @@ export default function Forms() {
 
           {step === 2 && (
             <div>
-            <label className="block mb-2 font-semibold">Academic</label>
-            <div className="space-y-2">
-              {["Unmet Subject requiremnts/projects", "attendance:absences/tardiness", "course choice: own/Sombody else", "failing grade", "school choice", "study habit","time mgt./schedule"].map((concern, index) => (
-                <div key={index} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    value={concern}
-                    checked={formData.concerns.includes(concern)}
-                    onChange={handleCheckboxChange}
-                    className="mr-2"
-                  />
-                  <span>{concern}</span>
-                </div>
-              ))}
+              <label className="block mb-2 font-semibold">Academic</label>
+              <div className="space-y-2">
+                {["Unmet Subject requiremnts/projects", "attendance:absences/tardiness", "course choice: own/Sombody else", "failing grade", "school choice", "study habit","time mgt./schedule"].map((concern, index) => (
+                  <div key={index} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      value={concern}
+                      checked={formData.concerns.includes(concern)}
+                      onChange={handleCheckboxChange}
+                      className="mr-2"
+                    />
+                    <span>{concern}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
           )}
 
           {step === 3 && (
-             <div>
-             <label className="block mb-2 font-semibold">Other Concerns</label>
-             <textarea name="otherConcerns" value={formData.otherConcerns} onChange={handleChange} placeholder="Please specify any other concerns not listed above" className="w-full p-2 border border-gray-300 rounded-md mb-4"></textarea>
-             
-             <label className="block mb-2 font-semibold">Observations/Remarks</label>
-             <textarea name="observations" value={formData.observations} onChange={handleChange} placeholder="Enter your observations or remarks about the student" className="w-full p-2 border border-gray-300 rounded-md mb-4"></textarea>
-             
-             <label className="block mb-2 font-semibold">Referred by</label>
-             <input type="text" name="referredBy" value={formData.referredBy} onChange={handleChange} placeholder="Your name" className="w-full p-2 border border-gray-300 rounded-md mb-4" />
-           </div>
-         )}
-      
+            <div>
+              <label className="block mb-2 font-semibold">Other Concerns</label>
+              <textarea 
+                name="otherConcerns" 
+                value={formData.otherConcerns} 
+                onChange={handleChange} 
+                placeholder="Please specify any other concerns not listed above" 
+                className="w-full p-2 border border-gray-300 rounded-md mb-4"
+              ></textarea>
+              
+              <label className="block mb-2 font-semibold">Observations/Remarks</label>
+              <textarea 
+                name="observations" 
+                value={formData.observations} 
+                onChange={handleChange} 
+                placeholder="Enter your observations or remarks about the student" 
+                className="w-full p-2 border border-gray-300 rounded-md mb-4"
+              ></textarea>
+              
+              <label className="block mb-2 font-semibold">Referred by</label>
+              <input 
+                type="text" 
+                name="referredBy" 
+                value={formData.referredBy} 
+                onChange={handleChange} 
+                placeholder="Your name" 
+                className="w-full p-2 border border-gray-300 rounded-md mb-4" 
+              />
+            </div>
+          )}
         </div>
 
         {/* Navigation Buttons */}
         <div className="flex justify-between mt-6">
           {step > 0 && (
-            <button onClick={prevStep} className="px-4 py-2 border border-gray-400 rounded-md">Back</button>
+            <button 
+              onClick={prevStep} 
+              className="px-4 py-2 border border-gray-400 rounded-md"
+              disabled={isSubmitting}
+            >
+              Back
+            </button>
           )}
-          <button onClick={step === steps.length - 1 ? () => console.log("Submit Referral", formData) : nextStep} className="px-4 py-2 bg-[#3B021F] text-white rounded-md flex items-center">
-            {step === steps.length - 1 ? "Submit Referral" : "Next"}
-            {step !== steps.length - 1 && <span className="ml-2">→</span>}
-          </button>
+          {step === steps.length - 1 ? (
+            <button 
+              onClick={handleSubmit} 
+              className="px-4 py-2 bg-[#3B021F] text-white rounded-md flex items-center"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Referral"}
+            </button>
+          ) : (
+            <button 
+              onClick={nextStep} 
+              className="px-4 py-2 bg-[#3B021F] text-white rounded-md flex items-center"
+            >
+              Next <span className="ml-2">→</span>
+            </button>
+          )}
         </div>
-
-        
       </div>
     </div>
   );
