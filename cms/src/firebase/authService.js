@@ -46,34 +46,44 @@ export const signUp = async (email, password, role, userData) => {
  */
 export const login = async (email, password) => {
   try {
-    // Admin login check
-    if (email === "admin") {
-      const adminDoc = doc(db, "Admin", "ID");
-      const adminSnapshot = await getDoc(adminDoc);
-
-      if (adminSnapshot.exists() && adminSnapshot.data().password === password) {
-        return { 
-          success: true, 
-          isAdmin: true,
-          user: {
-            role: 'admin',
-            email: 'admin'
-          },
-          message: "Admin login successful"
-        };
-      }
+    console.log("Login attempt for:", email);
+    
+    // Special case for admin
+    if (email === "admin@gmail.com" && password === "123") {
+      console.log("Admin credentials detected");
+      
+      // Skip Firebase Authentication for admin
+      localStorage.setItem('userRole', 'admin');
+      localStorage.setItem('userEmail', 'admin@gmail.com');
+      localStorage.setItem('isAdmin', 'true');
+      
+      console.log("Admin session established");
+      
       return { 
-        success: false, 
-        message: "Invalid admin credentials" 
+        success: true, 
+        isAdmin: true,
+        user: {
+          role: 'admin',
+          email: 'admin@gmail.com'
+        },
+        message: "Admin login successful"
       };
     }
 
+    // Regular user login with Firebase Authentication
+    console.log("Attempting Firebase authentication for regular user");
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+    console.log("Firebase authentication successful");
 
     // Check if the user is a student
     const studentDoc = await getDoc(doc(db, "students", user.uid));
     if (studentDoc.exists()) {
+      console.log("Student document found");
+      localStorage.setItem('userRole', 'student');
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userName', studentDoc.data().name || '');
+      
       return { 
         success: true, 
         isAdmin: false,
@@ -86,6 +96,11 @@ export const login = async (email, password) => {
     // Check if the user is faculty
     const facultyDoc = await getDoc(doc(db, "faculty", user.uid));
     if (facultyDoc.exists()) {
+      console.log("Faculty document found");
+      localStorage.setItem('userRole', 'faculty');
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userName', facultyDoc.data().name || '');
+      
       return { 
         success: true, 
         isAdmin: false,
@@ -95,12 +110,11 @@ export const login = async (email, password) => {
       };
     }
 
-    // If no document is found
+    console.log("User document not found in Firestore");
     return { 
       success: false, 
       message: "User document not found in Firestore" 
     };
-
   } catch (error) {
     console.error("Login error:", error);
     return { 
@@ -108,35 +122,6 @@ export const login = async (email, password) => {
       message: error.message || "Login failed" 
     };
   }
-};
-
-
-/**
- * Session Management Helper
- * @param {Object} user - User object
- * @param {boolean} isAdmin - Admin status
- */
-const handleSession = (user, isAdmin) => {
-  localStorage.setItem('userRole', isAdmin ? 'admin' : 'user');
-  localStorage.setItem('userEmail', user.email);
-  localStorage.setItem('lastLogin', new Date().toISOString());
-};
-
-/**
- * Error Handler
- * @param {Error} error - Error object
- * @returns {string} Formatted error message
- */
-const handleError = (error) => {
-  const errorMessages = {
-    'auth/user-not-found': 'No user found with this email',
-    'auth/wrong-password': 'Invalid password',
-    'auth/email-already-in-use': 'Email already registered',
-    'auth/invalid-email': 'Invalid email format',
-    'auth/weak-password': 'Password should be at least 6 characters'
-  };
-
-  return errorMessages[error.code] || error.message;
 };
 
 /**

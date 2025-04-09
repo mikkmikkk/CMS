@@ -15,10 +15,12 @@ import Faculty from './pages/faculty/facultydash.jsx';
 import ProfilePage from './pages/ui/Profile.jsx';
 import Forms from './pages/faculty/forms.jsx';
 import History from './pages/Admin/history.jsx';
-import AProfile from './pages/Admin/adprofile.jsx';
+
 import { ProfileProvider } from './pages/ui/ProfileContext.jsx';
 import Schedule from './pages/Admin/schedule.jsx';
 import FacultyNavbar from './pages/ui/facultynavbar.jsx';
+import studentdetailsModal from './pages/ui/studentdetailsModal.jsx'
+
 
 const router = createBrowserRouter([
   { path: "/", element: <App /> },
@@ -35,7 +37,6 @@ const router = createBrowserRouter([
   { path: "/schedule", element: <Schedule /> },
   { path: "/reports", element: <Reports /> },
   { path: "/history", element: <History /> },
-  { path: "/aprofile", element: <AProfile /> },
   { path: "/facultynavbar", element: <FacultyNavbar /> },
 ]);
 

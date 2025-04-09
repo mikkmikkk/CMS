@@ -63,7 +63,9 @@ export const submitFacultyReferral = async (formData) => {
       updatedAt: serverTimestamp(),
       
       // Flag to identify as faculty referral
-      isReferral: true
+      isReferral: true,
+      type: 'Referral',
+      referralDate: formData.referralDate || new Date().toISOString().split('T')[0]
     };
     
     // Add the document to Firestore

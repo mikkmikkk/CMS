@@ -31,6 +31,8 @@ export default function Request() {
             family: []
         }
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
 
     const steps = [
         { label: "Consent", progress: 10 },
@@ -67,12 +69,25 @@ export default function Request() {
     };
 
     const handleSubmit = async () => {
-        const result = await submitStudentInterviewForm(formData);
-        if (result.success) {
-            alert("Form submitted successfully!");
-            navigate('/Dashboard');
-        } else {
-            alert("Failed to submit form. Please try again.");
+        try {
+            setIsSubmitting(true);
+            setError(null);
+            
+            const result = await submitStudentInterviewForm(formData);
+            
+            if (result.success) {
+                alert("Form submitted successfully!");
+                navigate('/Dashboard');
+            } else {
+                setError(result.error || "Failed to submit form");
+                alert("Failed to submit form: " + (result.error || "Please try again."));
+            }
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            setError(error.message || "An unexpected error occurred");
+            alert("An unexpected error occurred. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -81,6 +96,13 @@ export default function Request() {
             <StudentNavbar />
             <div className="max-w-4xl mx-auto mt-10 p-5">
                 <h2 className="text-2xl font-bold text-center mb-5">Student Initial/Routine Interview</h2>
+
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                        <strong className="font-bold">Error: </strong>
+                        <span className="block sm:inline">{error}</span>
+                    </div>
+                )}
 
                 {/* Progress bar */}
                 <div className="relative w-full bg-gray-200 h-3 rounded-full mb-6 overflow-hidden">
@@ -118,260 +140,256 @@ export default function Request() {
                     </div>
                 )}
 
-        {step === 1 && (
-            <div>
-              <label className="block mb-2 font-semibold">Name</label>
-              <input type="text" name="studentName" value={formData.studentName} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
-              <label className="block mb-2 font-semibold">Date/Time</label>
-              <input type="datetime-local" name="dateTime" value={formData.dateTime} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
-              <label className="block mb-2 font-semibold">Date of Birth</label>
-              <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
-              <label className="block mb-2 font-semibold">Contact No.</label>
-              <input type="text" name="contactNo" value={formData.contactNo} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
-              <label className="block mb-2 font-semibold">Course/Yr. & Section</label>
-              <input type="text" name="courseYearSection" value={formData.courseYearSection} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
-              <label className="block mb-2 font-semibold">Age/Sex</label>
-              <input type="text" name="ageSex" value={formData.ageSex} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
-              <label className="block mb-2 font-semibold">Present Address</label>
-              <input type="text" name="presentAddress" value={formData.presentAddress} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
-              <label className="block mb-2 font-semibold">Emergency Contact Person</label>
-              <input type="text" name="emergencyContactPerson" value={formData.emergencyContactPerson} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
-              <label className="block mb-2 font-semibold">Emergency Contact No.</label>
-              <input type="text" name="emergencyContactNo" value={formData.emergencyContactNo} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
-            </div>
-          )}
+                {step === 1 && (
+                    <div>
+                      <label className="block mb-2 font-semibold">Name</label>
+                      <input type="text" name="studentName" value={formData.studentName} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                      <label className="block mb-2 font-semibold">Date/Time</label>
+                      <input type="datetime-local" name="dateTime" value={formData.dateTime} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                      <label className="block mb-2 font-semibold">Date of Birth</label>
+                      <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                      <label className="block mb-2 font-semibold">Contact No.</label>
+                      <input type="text" name="contactNo" value={formData.contactNo} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                      <label className="block mb-2 font-semibold">Course/Yr. & Section</label>
+                      <input type="text" name="courseYearSection" value={formData.courseYearSection} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                      <label className="block mb-2 font-semibold">Age/Sex</label>
+                      <input type="text" name="ageSex" value={formData.ageSex} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                      <label className="block mb-2 font-semibold">Present Address</label>
+                      <input type="text" name="presentAddress" value={formData.presentAddress} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                      <label className="block mb-2 font-semibold">Emergency Contact Person</label>
+                      <input type="text" name="emergencyContactPerson" value={formData.emergencyContactPerson} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                      <label className="block mb-2 font-semibold">Emergency Contact No.</label>
+                      <input type="text" name="emergencyContactNo" value={formData.emergencyContactNo} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+                    </div>
+                )}
 
-        {step === 2 && (
-          <div>
-    
-          <label className="block mb-2">1. What do you think of yourself? How do you describe yourself?</label>
-          <textarea
-            placeholder="Enter your answer here..."
-            className="w-full p-2 border rounded mb-4"
-            name="selfDescription"
-            value={formData.selfDescription}
-            onChange={handleChange}
-          ></textarea>
-          <label className="block mb-2">2. What are the most important things to you?</label>
-          <textarea
-            placeholder="Enter your answer here..."
-            className="w-full p-2 border rounded mb-4"
-            name="importantThings"
-            value={formData.importantThings}
-            onChange={handleChange}
-          ></textarea>
-          <label className="block mb-2">3. Tell me about your friends. What are the things you like or dislike doing with them?</label>
-          <textarea
-            placeholder="Enter your answer here..."
-            className="w-full p-2 border rounded mb-4"
-            name="friends"
-            value={formData.friends}
-            onChange={handleChange}
-          ></textarea>
-          <label className="block mb-2">4. What do you like or dislike about your class? Describe your participation in class activities.</label>
-          <textarea
-            placeholder="Enter your answer here..."
-            className="w-full p-2 border rounded mb-4"
-            name="classParticipation"
-            value={formData.classParticipation}
-            onChange={handleChange}
-          ></textarea>
-          
-        </div>
-        )}
+                {step === 2 && (
+                  <div>
+                    <label className="block mb-2">1. What do you think of yourself? How do you describe yourself?</label>
+                    <textarea
+                        placeholder="Enter your answer here..."
+                        className="w-full p-2 border rounded mb-4"
+                        name="selfDescription"
+                        value={formData.selfDescription}
+                        onChange={handleChange}
+                    ></textarea>
+                    <label className="block mb-2">2. What are the most important things to you?</label>
+                    <textarea
+                        placeholder="Enter your answer here..."
+                        className="w-full p-2 border rounded mb-4"
+                        name="importantThings"
+                        value={formData.importantThings}
+                        onChange={handleChange}
+                    ></textarea>
+                    <label className="block mb-2">3. Tell me about your friends. What are the things you like or dislike doing with them?</label>
+                    <textarea
+                        placeholder="Enter your answer here..."
+                        className="w-full p-2 border rounded mb-4"
+                        name="friends"
+                        value={formData.friends}
+                        onChange={handleChange}
+                    ></textarea>
+                    <label className="block mb-2">4. What do you like or dislike about your class? Describe your participation in class activities.</label>
+                    <textarea
+                        placeholder="Enter your answer here..."
+                        className="w-full p-2 border rounded mb-4"
+                        name="classParticipation"
+                        value={formData.classParticipation}
+                        onChange={handleChange}
+                    ></textarea>
+                  </div>
+                )}
 
-        {step === 3 && (
-            <div>
-            <label className="block mb-2">5. Tell me about your family. How is your relationship with each member of the family? Who do you like or dislike among them? Why?</label>
-          <textarea
-            placeholder="Enter your answer here..."
-            className="w-full p-2 border rounded mb-4"
-            name="family"
-            value={formData.family}
-            onChange={handleChange}
-          ></textarea>
-          <label className="block mb-2">6. To whom do you feel comfortable sharing your problems? Why?</label>
-          <textarea
-            placeholder="Enter your answer here..."
-            className="w-full p-2 border rounded mb-4"
-            name="comfortableConfidant"
-            value={formData.comfortableConfidant}
-            onChange={handleChange}
-          ></textarea>
-          <label className="block mb-2">7. Is there anything I haven't asked that you like to tell me?</label>
-          <textarea
-            placeholder="Enter your answer here..."
-            className="w-full p-2 border rounded mb-4"
-            name="additionalComments"
-            value={formData.additionalComments}
-            onChange={handleChange}
-          ></textarea>
-          
-          </div>
-        )} 
+                {step === 3 && (
+                    <div>
+                    <label className="block mb-2">5. Tell me about your family. How is your relationship with each member of the family? Who do you like or dislike among them? Why?</label>
+                    <textarea
+                        placeholder="Enter your answer here..."
+                        className="w-full p-2 border rounded mb-4"
+                        name="family"
+                        value={formData.family}
+                        onChange={handleChange}
+                    ></textarea>
+                    <label className="block mb-2">6. To whom do you feel comfortable sharing your problems? Why?</label>
+                    <textarea
+                        placeholder="Enter your answer here..."
+                        className="w-full p-2 border rounded mb-4"
+                        name="comfortableConfidant"
+                        value={formData.comfortableConfidant}
+                        onChange={handleChange}
+                    ></textarea>
+                    <label className="block mb-2">7. Is there anything I haven't asked that you like to tell me?</label>
+                    <textarea
+                        placeholder="Enter your answer here..."
+                        className="w-full p-2 border rounded mb-4"
+                        name="additionalComments"
+                        value={formData.additionalComments}
+                        onChange={handleChange}
+                    ></textarea>
+                    </div>
+                )} 
 
-         {step === 4 && (
-            <div>
-            <h2 className="text-xl font-bold mb-4">Areas of Concern</h2>
-            
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold">Personal</h3>
-                  <div>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2" 
-                        value="notConfident"
-                        checked={formData.areasOfConcern.personal.includes("notConfident")}
-                        onChange={() => handleCheckboxChange("personal", "notConfident")}
-                      /> I do not feel confident about myself
-                    </label>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2" 
-                        value="hardTimeDecisions"
-                        checked={formData.areasOfConcern.personal.includes("hardTimeDecisions")}
-                        onChange={() => handleCheckboxChange("personal", "hardTimeDecisions")}
-                      /> I have a hard time making decisions
-                    </label>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2"
-                        value="problemSleeping"
-                        checked={formData.areasOfConcern.personal.includes("problemSleeping")}
-                        onChange={() => handleCheckboxChange("personal", "problemSleeping")} 
-                      /> I have a problem with sleeping
-                    </label>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2" 
-                        value="moodNotStable"
-                        checked={formData.areasOfConcern.personal.includes("moodNotStable")}
-                        onChange={() => handleCheckboxChange("personal", "moodNotStable")}
-                      /> I have noticed that my mood is not stable
-                    </label>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold">Interpersonal</h3>
-                  <div>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2"
-                        value="beingBullied"
-                        checked={formData.areasOfConcern.interpersonal.includes("beingBullied")}
-                        onChange={() => handleCheckboxChange("interpersonal", "beingBullied")}
-                      /> I am being bullied
-                    </label>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2" 
-                        value="cannotHandlePeerPressure"
-                        checked={formData.areasOfConcern.interpersonal.includes("cannotHandlePeerPressure")}
-                        onChange={() => handleCheckboxChange("interpersonal", "cannotHandlePeerPressure")}
-                      /> I cannot handle peer pressure
-                    </label>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2" 
-                        value="difficultyGettingAlong"
-                        checked={formData.areasOfConcern.interpersonal.includes("difficultyGettingAlong")}
-                        onChange={() => handleCheckboxChange("interpersonal", "difficultyGettingAlong")}
-                      /> I have difficulty getting along with others
-                    </label>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold">Academic</h3>
-                  <div>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2"
-                        value="overlyWorriedAcademic"
-                        checked={formData.areasOfConcern.academic.includes("overlyWorriedAcademic")}
-                        onChange={() => handleCheckboxChange("academic", "overlyWorriedAcademic")}
-                      /> I am overly worried about my academic performance
-                    </label>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2"
-                        value="notMotivatedStudy"
-                        checked={formData.areasOfConcern.academic.includes("notMotivatedStudy")}
-                        onChange={() => handleCheckboxChange("academic", "notMotivatedStudy")}
-                      /> I am not motivated to study
-                    </label>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2"
-                        value="difficultyUnderstanding"
-                        checked={formData.areasOfConcern.academic.includes("difficultyUnderstanding")}
-                        onChange={() => handleCheckboxChange("academic", "difficultyUnderstanding")}
-                      /> I have difficulty understanding the class lessons
-                    </label>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold">Family</h3>
-                  <div>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2"
-                        value="hardTimeDealingParents"
-                        checked={formData.areasOfConcern.family.includes("hardTimeDealingParents")}
-                        onChange={() => handleCheckboxChange("family", "hardTimeDealingParents")}
-                      /> I have a hard time dealing with my parents/guardian's expectations
-                    </label>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2"
-                        value="difficultyOpeningUp"
-                        checked={formData.areasOfConcern.family.includes("difficultyOpeningUp")}
-                        onChange={() => handleCheckboxChange("family", "difficultyOpeningUp")}
-                      /> I have difficulty opening up to family member/s
-                    </label>
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        className="mr-2"
-                        value="financialConcerns"
-                        checked={formData.areasOfConcern.family.includes("financialConcerns")}
-                        onChange={() => handleCheckboxChange("family", "financialConcerns")}
-                      /> Our family is having financial concerns
-                    </label>
-                  </div>
-                </div>
-              </div>
-            
-          </div>
-        )} 
-
+                {step === 4 && (
+                    <div>
+                    <h2 className="text-xl font-bold mb-4">Areas of Concern</h2>
+                    
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="font-semibold">Personal</h3>
+                          <div>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2" 
+                                value="notConfident"
+                                checked={formData.areasOfConcern.personal.includes("notConfident")}
+                                onChange={() => handleCheckboxChange("personal", "notConfident")}
+                              /> I do not feel confident about myself
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2" 
+                                value="hardTimeDecisions"
+                                checked={formData.areasOfConcern.personal.includes("hardTimeDecisions")}
+                                onChange={() => handleCheckboxChange("personal", "hardTimeDecisions")}
+                              /> I have a hard time making decisions
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2"
+                                value="problemSleeping"
+                                checked={formData.areasOfConcern.personal.includes("problemSleeping")}
+                                onChange={() => handleCheckboxChange("personal", "problemSleeping")} 
+                              /> I have a problem with sleeping
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2" 
+                                value="moodNotStable"
+                                checked={formData.areasOfConcern.personal.includes("moodNotStable")}
+                                onChange={() => handleCheckboxChange("personal", "moodNotStable")}
+                              /> I have noticed that my mood is not stable
+                            </label>
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">Interpersonal</h3>
+                          <div>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2"
+                                value="beingBullied"
+                                checked={formData.areasOfConcern.interpersonal.includes("beingBullied")}
+                                onChange={() => handleCheckboxChange("interpersonal", "beingBullied")}
+                              /> I am being bullied
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2" 
+                                value="cannotHandlePeerPressure"
+                                checked={formData.areasOfConcern.interpersonal.includes("cannotHandlePeerPressure")}
+                                onChange={() => handleCheckboxChange("interpersonal", "cannotHandlePeerPressure")}
+                              /> I cannot handle peer pressure
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2" 
+                                value="difficultyGettingAlong"
+                                checked={formData.areasOfConcern.interpersonal.includes("difficultyGettingAlong")}
+                                onChange={() => handleCheckboxChange("interpersonal", "difficultyGettingAlong")}
+                              /> I have difficulty getting along with others
+                            </label>
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">Academic</h3>
+                          <div>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2"
+                                value="overlyWorriedAcademic"
+                                checked={formData.areasOfConcern.academic.includes("overlyWorriedAcademic")}
+                                onChange={() => handleCheckboxChange("academic", "overlyWorriedAcademic")}
+                              /> I am overly worried about my academic performance
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2"
+                                value="notMotivatedStudy"
+                                checked={formData.areasOfConcern.academic.includes("notMotivatedStudy")}
+                                onChange={() => handleCheckboxChange("academic", "notMotivatedStudy")}
+                              /> I am not motivated to study
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2"
+                                value="difficultyUnderstanding"
+                                checked={formData.areasOfConcern.academic.includes("difficultyUnderstanding")}
+                                onChange={() => handleCheckboxChange("academic", "difficultyUnderstanding")}
+                              /> I have difficulty understanding the class lessons
+                            </label>
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">Family</h3>
+                          <div>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2"
+                                value="hardTimeDealingParents"
+                                checked={formData.areasOfConcern.family.includes("hardTimeDealingParents")}
+                                onChange={() => handleCheckboxChange("family", "hardTimeDealingParents")}
+                              /> I have a hard time dealing with my parents/guardian's expectations
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2"
+                                value="difficultyOpeningUp"
+                                checked={formData.areasOfConcern.family.includes("difficultyOpeningUp")}
+                                onChange={() => handleCheckboxChange("family", "difficultyOpeningUp")}
+                              /> I have difficulty opening up to family member/s
+                            </label>
+                            <label className="flex items-center">
+                              <input 
+                                type="checkbox" 
+                                className="mr-2"
+                                value="financialConcerns"
+                                checked={formData.areasOfConcern.family.includes("financialConcerns")}
+                                onChange={() => handleCheckboxChange("family", "financialConcerns")}
+                              /> Our family is having financial concerns
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                )} 
 
                 {/* Navigation Buttons */}
                 <div className="flex justify-between mt-6">
                     <button
                         onClick={prevStep}
                         className={`px-4 py-2 border border-gray-400 rounded-md ${step === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-                        disabled={step === 0}
+                        disabled={step === 0 || isSubmitting}
                     >
                         Back
                     </button>
                     <button
                         onClick={step === steps.length - 1 ? handleSubmit : nextStep}
                         className="px-4 py-2 bg-[#3B021F] text-white rounded-md flex items-center"
+                        disabled={isSubmitting}
                     >
-                        {step === steps.length - 1 ? "Submit" : "Next"}
+                        {step === steps.length - 1 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
                         {step !== steps.length - 1 && <span className="ml-2">→</span>}
                     </button>
                 </div>
