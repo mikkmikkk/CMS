@@ -480,7 +480,7 @@ function AdminDashboard() {
                 <div className="flex justify-between">
                   <h2 className="text-lg font-bold">Recent Activity</h2>
                   <button 
-                    onClick={() => navigate("/submission")} 
+                    onClick={() => navigate("/SubmittedFormsManagement")} 
                     className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors cursor-pointer"
                   >
                     See all
