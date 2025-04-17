@@ -1,139 +1,131 @@
+
 import React, { useState, useEffect } from 'react';
 import AdminNavbar from '../ui/adminnavbar';
-import { Chart } from 'primereact/chart';
 import { Dropdown } from 'primereact/dropdown';
+import { getStudentInterviewForms } from '../../firebase/firestoreService';
+import { CSVLink } from 'react-csv';
+import SummaryStatisticsSection from '../../components/SummaryStatisticsSection';
+import ChartsSection from '../../components/ChartsSection';
+import { 
+  processChartData, 
+  calculateSummaryStatistics, 
+  filterFormsByTimeframe, 
+  filterFormsByCollege,
+  prepareCSVData,
+  getDepartmentFromCourse
+} from '../../components/reportHelpers';
 
 function Reports() {
   const [studentsPerCollegeData, setStudentsPerCollegeData] = useState({});
   const [sessionTypesData, setSessionTypesData] = useState({});
   const [counselingSessionsData, setCounselingSessionsData] = useState({});
   const [yearPerCollegesData, setYearPerCollegesData] = useState({});
+  const [remarksDistributionData, setRemarksDistributionData] = useState({});
   const [chartOptions, setChartOptions] = useState({});
   const [selectedMonth, setSelectedMonth] = useState('thisMonth');
   const [selectedCollege, setSelectedCollege] = useState('all');
+  const [reportData, setReportData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [summaryStats, setSummaryStats] = useState({
+    totalSessions: 0,
+    totalCompletedSessions: 0,
+    averageSessionsPerDay: 0,
+    mostActiveCollege: '',
+    leastActiveCollege: '',
+    mostCommonReason: '',
+    mostCommonRemark: ''
+  });
 
-  useEffect(() => {
-    // Data for Students per College (Pie Chart)
-    const studentsPerCollegeData = {
-      labels: ['CAH', 'CMBS', 'CCS', 'CABE'],
-      datasets: [
-        {
-          label: 'Students per College',
-          data: [170, 150, 80, 100],  // Example student counts per College
-          backgroundColor: [
-            'rgba(239, 68, 68, 0.4)',
-            'rgba(239, 68, 68, 0.4)',
-            'rgba(239, 68, 68, 0.4)',
-            'rgba(239, 68, 68, 0.4)',
-          ],
-          borderColor: [
-            'rgb(239, 68, 68)',
-            'rgb(239, 68, 68)',
-            'rgb(239, 68, 68)',
-            'rgb(239, 68, 68)',
-          ],
-          borderWidth: 1,
-        },
-      ],
-    };
-
-    // Data for Session Types (Bar Chart)
-    const sessionTypesData = {
-      labels: ['Referral', 'Online', 'Walk-in'],
-      datasets: [
-        {
-          label: 'Session Types',
-          data: [65, 59, 80], // Example session counts for each type
-          backgroundColor: [
-            'rgba(239, 68, 68, 0.4)',
-            'rgba(239, 68, 68, 0.4)',
-            'rgba(239, 68, 68, 0.4)',
-          ],
-          borderColor: [
-            'rgb(239, 68, 68)',
-            'rgb(239, 68, 68)',
-            'rgb(239, 68, 68)',
-          ],
-          borderWidth: 1,
-        },
-      ],
-    };
-
-    // Data for Counseling Sessions Over Time (Line Chart)
-    const counselingSessionsData = {
-      labels: ['2024-11-2', '2024-11-5', '2024-11-8', '2024-11-11', '2024-11-14', '2024-11-17', '2024-11-20', '2024-11-23', '2024-11-26', '2024-11-29'],
-      datasets: [
-        {
-          label: 'Counseling Sessions',
-          data: [900, 500, 550, 850, 150, 750, 550, 450, 350, 320],
-          fill: false,
-          borderColor: 'rgb(239, 68, 68)',
-          tension: 0.4,
-        },
-      ],
-    };
-
-    // Data for Year per Colleges (Bar Chart)
-    const yearPerCollegesData = {
-      labels: ['1st Year', '2nd Year', '3rd Year', '4th Year'],
-      datasets: [
-        {
-          label: 'Students',
-          data: [80, 30, 75, 65],
-          backgroundColor: 'rgba(239, 68, 68, 0.4)',
-          borderColor: 'rgb(239, 68, 68)',
-          borderWidth: 1,
-        },
-      ],
-    };
-
-    const hardcodedOptions = {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      },
-      plugins: {
-        legend: {
-          position: 'top',
-          align: 'center',
-          labels: {
-            color: '#495057'
-          }
-        }
-      },
-      maintainAspectRatio: false
-    };
-
-    setStudentsPerCollegeData(studentsPerCollegeData);
-    setSessionTypesData(sessionTypesData);
-    setCounselingSessionsData(counselingSessionsData);
-    setYearPerCollegesData(yearPerCollegesData);
-    setChartOptions(hardcodedOptions)
-  }, []);
-
+  // Constants for dropdown options
   const monthOptions = [
     { label: 'This Month', value: 'thisMonth' },
     { label: 'Last Month', value: 'lastMonth' },
     { label: 'Past 3 Months', value: 'past3Months' },
+    { label: 'All Time', value: 'allTime' },
   ];
 
   const collegeOptions = [
     { label: 'All Colleges', value: 'all' },
-    { label: 'Engineering', value: 'engineering' },
-    { label: 'Business', value: 'business' },
+    { label: 'CAH (College of Arts and Humanities)', value: 'cah' },
+    { label: 'CMBS (College of Medical and Biological Science)', value: 'cmbs' },
+    { label: 'CCS (College of Computer Studies)', value: 'ccs' },
+    { label: 'CABE (College of Accounting and Business Education)', value: 'cabe' },
+    { label: 'CEA (College of Engineering and Architecture)', value: 'cea' },
+    { label: 'CHESFS (College of Human Environmental Sciences and Food Studies)', value: 'chesfs' },
+    { label: 'CM (College of Music)', value: 'cm' },
+    { label: 'CN (College of Nursing)', value: 'cn' },
+    { label: 'CPC (College of Pharmacy and Chemistry)', value: 'cpc' },
+    { label: 'CTE (College of Teacher Education)', value: 'cte' }
   ];
+
+  useEffect(() => {
+    fetchDataAndGenerateReports();
+  }, [selectedMonth, selectedCollege]);
+
+  const fetchDataAndGenerateReports = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch all forms
+      const result = await getStudentInterviewForms();
+      
+      if (!result.success) {
+        setError(result.error || "Failed to fetch data");
+        setLoading(false);
+        return;
+      }
+      
+      const forms = result.forms || [];
+      
+      // Log summary of data for debugging
+      console.log(`Total forms fetched: ${forms.length}`);
+      console.log(`Forms with status 'Completed': ${forms.filter(f => f.status === 'Completed').length}`);
+      console.log(`Forms with remarks: ${forms.filter(f => f.remarks).length}`);
+      
+      setReportData(forms);
+      
+      // Filter data based on selected month
+      const filteredForms = filterFormsByTimeframe(forms, selectedMonth);
+      
+      // Further filter by college if needed
+      const collegeFilteredForms = filterFormsByCollege(filteredForms, selectedCollege, getDepartmentFromCourse);
+      
+      // Process data for charts and set chart states
+      processChartData(
+        collegeFilteredForms,
+        getDepartmentFromCourse,
+        setStudentsPerCollegeData,
+        setSessionTypesData,
+        setCounselingSessionsData,
+        setYearPerCollegesData,
+        setRemarksDistributionData,
+        setChartOptions
+      );
+      
+      // Calculate summary statistics
+      const stats = calculateSummaryStatistics(collegeFilteredForms, getDepartmentFromCourse);
+      setSummaryStats(stats);
+      
+    } catch (error) {
+      console.error("Error generating reports:", error);
+      setError("Failed to generate reports: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
       <AdminNavbar />
 
       {/* Dashboard Content */}
-      <div className="max-w-7xl mx-auto mt-5 px-6 pt-24">
+      <div className="max-w-8xl mx-auto mt- px-6 pt-12">
         <h1 className="text-3xl font-bold mb-6">Counseling Reports</h1>
 
         {/* Filters */}
-        <div className="flex justify-end space-x-4 mb-8">  {/* Increased spacing below filters */}
+        <div className="flex justify-end space-x-4 mb-8">
           <Dropdown
             value={selectedMonth}
             options={monthOptions}
@@ -150,51 +142,48 @@ function Reports() {
           />
         </div>
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Counseling Sessions Over Time (Line Chart) */}
-          <div className="bg-white border p-4 rounded-lg shadow-md mx-2"> {/* Added horizontal margin */}
-            <h2 className="text-lg font-semibold mb-2">Counseling Sessions Over Time</h2>
-            <Chart type="line" data={counselingSessionsData} options={chartOptions} style={{ width: '100%', height: '200px' }} />
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <p className="text-lg">Loading report data...</p>
           </div>
-
-          {/* Students per College (Pie Chart) */}
-          <div className="bg-white border p-4 rounded-lg shadow-md mx-2"> {/* Added horizontal margin */}
-            <h2 className="text-lg font-semibold mb-2">Students per College</h2>
-            <Chart type="pie" data={studentsPerCollegeData} options={chartOptions} style={{ width: '100%', height: '200px' }} />
+        ) : error ? (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
           </div>
+        ) : (
+          <>
+            {/* Summary Statistics Section */}
+            <SummaryStatisticsSection stats={summaryStats} />
 
-          {/* Session Types (Bar Chart) */}
-          <div className="bg-white border p-4 rounded-lg shadow-md mx-2"> {/* Added horizontal margin */}
-            <h2 className="text-lg font-semibold mb-2">Session Types</h2>
-            <Chart type="bar" data={sessionTypesData} options={chartOptions} style={{ width: '100%', height: '200px' }} />
-          </div>
+            {/* Charts Section */}
+            <ChartsSection 
+              studentsPerCollegeData={studentsPerCollegeData}
+              sessionTypesData={sessionTypesData}
+              counselingSessionsData={counselingSessionsData}
+              yearPerCollegesData={yearPerCollegesData}
+              remarksDistributionData={remarksDistributionData}
+              chartOptions={chartOptions}
+            />
 
-          {/* Year per Colleges (Bar Chart) */}
-          <div className="bg-white border p-4 rounded-lg shadow-md mx-2 md:col-span-2 lg:col-span-3"> {/* Added horizontal margin */}
-            <h2 className="text-lg font-semibold mb-2">Year per Colleges</h2>
-            <Chart type="bar" data={yearPerCollegesData} options={chartOptions} style={{ width: '100%', height: '200px' }} />
-          </div>
-        </div>
-
-        {/* Summary Statistics */}
-        <div className="bg-white shadow rounded-md p-5 mb-5 mt-8"> {/* Increased spacing above stats */}
-          <h2 className="text-lg font-semibold mb-3">Summary Statistics</h2>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>Total Session:</div><div>532</div>
-            <div>Average Sessions per Day:</div><div>6.3</div>
-            <div>Most Active College:</div><div>Pharmacy</div>
-            <div>Least Active College:</div><div>Computer Science</div>
-            <div>Most Common Reasons:</div><div>idk what reason tbh</div>
-          </div>
-        </div>
-
-        {/* Export Button */}
-        <div className="flex justify-center mt-4">
-          <button className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded text-sm">
-            Export Data as CSV
-          </button>
-        </div>
+            {/* Export Button */}
+            <div className="flex justify-center mt-4 mb-8">
+              {reportData.length > 0 ? (
+                <CSVLink
+                  data={prepareCSVData(reportData)}
+                  filename={`counseling-report-${new Date().toISOString().split('T')[0]}.csv`}
+                  className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded text-sm"
+                >
+                  Export Data as CSV
+                </CSVLink>
+              ) : (
+                <button className="bg-pink-300 text-white font-bold py-2 px-4 rounded text-sm cursor-not-allowed" disabled>
+                  No Data to Export
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

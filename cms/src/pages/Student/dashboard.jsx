@@ -1,10 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StudentNavbar from "../ui/studentnavbar";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
+  const [fullName, setFullName] = useState("");
+
+  useEffect(() => {
+    const storedFullName = localStorage.getItem("userFullName");
+    console.log("🟢 Retrieved Full Name in Dashboard:", storedFullName);
+
+    if (storedFullName) {
+      setFullName(storedFullName);
+    } else {
+      console.warn("⚠ Full Name not found in localStorage.");
+    }
+  }, []);
 
   const handleLogout = () => {
     navigate("/"); // Redirect to home
@@ -33,10 +44,10 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation Bar */}
-      < StudentNavbar />
+      <StudentNavbar />
 
       {/* Welcome Text */}
-      <h1 className="text-2xl font-bold mt-16 px-16">Welcome Micah Espunsoa</h1>
+      <h1 className="text-2xl font-bold mt-16 px-16">Welcome {fullName || "Guest"}</h1>
 
       {/* Content Grid */}
       <div className="grid grid-cols-2 gap-6 mt-6 px-16">
@@ -77,4 +88,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

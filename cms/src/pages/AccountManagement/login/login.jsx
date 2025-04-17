@@ -14,7 +14,7 @@ export default function Login() {
   // Handle Role Selection
   const handleRoleSelect = (selectedRole) => {
     setRole(selectedRole);
-    setEmail(selectedRole === "admin" ? "admin" : "");
+    setEmail(selectedRole === "admin" ? "admin" : ""); // Pre-fill email for admin
     setError("");
   };
 
@@ -32,13 +32,17 @@ export default function Login() {
       const result = await login(email, password);
 
       if (result.success) {
+        // Store user role and email in localStorage
         localStorage.setItem("userRole", result.isAdmin ? "admin" : role);
         localStorage.setItem("userEmail", email);
 
+        // Navigate to appropriate dashboard based on user role
         if (result.isAdmin) {
-          navigate("/admin-dashboard");
+          navigate("/Admindashboard");
+        } else if (role === "faculty") {
+          navigate("/facultydash"); // Faculty dashboard redirect
         } else {
-          navigate("/dashboard");
+          navigate("/dashboard"); // Default dashboard for students
         }
       } else {
         setError(result.message);

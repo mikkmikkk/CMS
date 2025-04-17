@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../ui/ProfileContext";
 import FacultyNavbar from "../ui/facultynavbar";
+import { submitFacultyReferral } from "../../firebase/facultyReferralService";
 
 export default function Forms() {
   const navigate = useNavigate();
@@ -10,11 +11,17 @@ export default function Forms() {
   const [formData, setFormData] = useState({
     studentName: "",
     studentID: "",
+    referralDate: new Date().toISOString().split('T')[0], // Today's date
     facultyName: "",
     department: "",
     referralReason: "",
-    concerns: []
+    concerns: [],
+    otherConcerns: "",
+    observations: "",
+    referredBy: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const steps = [
     { label: "Student Information", progress: 25 },
@@ -35,6 +42,32 @@ export default function Forms() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleSubmit = async () => {
+    console.log("Submitting referral with data:", formData); // Debugging log
+  
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      
+      const result = await submitFacultyReferral(formData);
+      console.log("Submission result:", result); // Debugging log
+  
+      if (result.success) {
+        alert("Referral submitted successfully!");
+        navigate("/facultydash"); // Redirect after submission
+      } else {
+        setError(result.error || "Unknown error occurred");
+        alert("Error submitting referral: " + (result.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      setError(error.message || "Unexpected error occurred");
+      alert("Unexpected error: " + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
   const handleCheckboxChange = (e) => {
     const { value, checked } = e.target;
     setFormData((prevData) => {
@@ -51,6 +84,13 @@ export default function Forms() {
       
       <div className="max-w-2xl mx-auto mt-20 space-y-6">
         <h2 className="text-2xl font-bold text-center">Referral form</h2>
+        
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
 
         {/* Progress Bar */}
         <div className="relative w-full bg-gray-200 h-2 rounded-full mb-6">
@@ -76,9 +116,9 @@ export default function Forms() {
               <label className="block mb-2 font-semibold">Client's Name</label>
               <input type="text" name="studentName" value={formData.studentName} onChange={handleChange} placeholder="Enter student name" className="w-full p-2 border border-gray-300 rounded-md mb-4" />
               <label className="block mb-2 font-semibold">Course/Year</label>
-              <input type="text" name="studentID" value={formData.studentID} onChange={handleChange} placeholder="Enter student ID" className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+              <input type="text" name="studentID" value={formData.studentID} onChange={handleChange} placeholder="Enter course/year/section" className="w-full p-2 border border-gray-300 rounded-md mb-4" />
               <label className="block mb-2 font-semibold">Date</label>
-              <input type="text" name="studentID" value={formData.studentID} onChange={handleChange} placeholder="Enter student ID" className="w-full p-2 border border-gray-300 rounded-md mb-4" />
+              <input type="date" name="referralDate" value={formData.referralDate} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mb-4" />
             </div>
           )}
 
@@ -140,15 +180,23 @@ export default function Forms() {
         {/* Navigation Buttons */}
         <div className="flex justify-between mt-6">
           {step > 0 && (
-            <button onClick={prevStep} className="px-4 py-2 border border-gray-400 rounded-md">Back</button>
+            <button 
+              onClick={prevStep} 
+              className="px-4 py-2 border border-gray-400 rounded-md"
+              disabled={isSubmitting}
+            >
+              Back
+            </button>
           )}
-          <button onClick={step === steps.length - 1 ? () => console.log("Submit Referral", formData) : nextStep} className="px-4 py-2 bg-[#3B021F] text-white rounded-md flex items-center">
-            {step === steps.length - 1 ? "Submit Referral" : "Next"}
+          <button 
+            onClick={step === steps.length - 1 ? handleSubmit : nextStep} 
+            className="px-4 py-2 bg-[#3B021F] text-white rounded-md flex items-center"
+            disabled={isSubmitting}
+          >
+            {step === steps.length - 1 ? (isSubmitting ? "Submitting..." : "Submit Referral") : "Next"}
             {step !== steps.length - 1 && <span className="ml-2">→</span>}
           </button>
         </div>
-
-        
       </div>
     </div>
   );
