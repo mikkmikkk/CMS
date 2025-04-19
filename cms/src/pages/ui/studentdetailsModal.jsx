@@ -22,6 +22,21 @@ function StudentDetailsModal({
     }
   };
 
+  // Handle the Accept button click
+  const handleAccept = () => {
+    console.log("Follow-up date at accept:", followUpDate); // Add this logging
+    
+    // For Follow up, make sure there's a date selected
+    if (dropdownValue === 'Follow up' && !followUpDate) {
+      alert('Please select a follow-up date');
+      return;
+    }
+    
+    // Call the handleRemarkChange function with the student ID, remark, and follow-up date
+    handleRemarkChange(student.id, dropdownValue, followUpDate, sessionNotes);
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white w-11/12 max-w-2xl rounded-lg shadow-lg p-6 relative max-h-[90vh] overflow-y-auto">
@@ -37,6 +52,7 @@ function StudentDetailsModal({
         
         <h2 className="text-xl font-bold mb-4">View History Details</h2>
         
+        {/* Student details sections remain the same */}
         <div>
           <p><strong>Mode of Counseling:</strong> {student.details.mode}</p>
           <p><strong>Full name:</strong> {student.details.fullName}</p>
@@ -125,51 +141,62 @@ function StudentDetailsModal({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
               <select
-                                className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                value={dropdownValue}
-                                onChange={(e) => {
-                                  if (e.target.value) {
-                                    handleRemarkChange(student.id, e.target.value);
-                                  }
-                                }}
-                                disabled={updatingId === student.id}
-                              >
-                                <option value="">Select Remarks</option>
-                                <option value="Attended">Attended</option>
-                                <option value="No Show">No Show</option>
-                                <option value="No Response">No Response</option>
-                                <option value="Terminated">Terminated</option>
-                                <option value="Follow up">Follow-up</option>
-                              </select>
-                            </div>
-                            
-                            {/* Only show follow-up date field when Follow-up is selected */}
-                            {(dropdownValue === 'Follow up' || student.remarks === 'Follow up') && (
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Date</label>
-                                <input
-                                  type="date"
-                                  className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                  min={new Date().toISOString().split('T')[0]}
-                                  value={followUpDate}
-                                  onChange={(e) => setFollowUpDate(e.target.value)}
-                                />
-                              </div>
-                            )}
-                          </div>
-                
-                          <div className="flex justify-end mt-6">
-                            <button
-                              onClick={onClose}
-                              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-                            >
-                              Close
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
+                className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                value={dropdownValue}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleRemarkChange(student.id, e.target.value, null, null, true); // true indicates this is just a dropdown change
+                  }
+                }}
+                disabled={updatingId === student.id}
+              >
+                <option value="">Select Remarks</option>
+                <option value="Attended">Attended</option>
+                <option value="No Show">No Show</option>
+                <option value="No Response">No Response</option>
+                <option value="Terminated">Terminated</option>
+                <option value="Follow up">Follow-up</option>
+              </select>
+            </div>
+            
+            {/* Only show follow-up date field when Follow-up is selected */}
+            {dropdownValue === 'Follow up' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Date</label>
+                <input
+                  type="date"
+                  className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  min={new Date().toISOString().split('T')[0]}
+                  value={followUpDate}
+                  onChange={(e) => {
+                    console.log("Date selected:", e.target.value); // Add this logging
+                    setFollowUpDate(e.target.value);
+                  }}
+                  required={dropdownValue === 'Follow up'}
+                />
+              </div>
+            )}
+          </div>
+        
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={handleAccept}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              disabled={updatingId === student.id || !dropdownValue || (dropdownValue === 'Follow up' && !followUpDate)}
+            >
+              Accept
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
                 
                 export default StudentDetailsModal;

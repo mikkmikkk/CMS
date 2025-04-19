@@ -284,67 +284,109 @@ const getDepartmentFromCourse = (courseCode) => {
   };
 
   // Handler for when a remark is selected
-  const handleRemarkChange = async (formId, newRemark) => {
-    try {
-      setUpdatingId(formId);
-      
-      // If Follow-up is selected, we don't move to history automatically
-      if (newRemark === 'Follow up') {
-        // Just update the remark but don't move to history
-        const result = await updateFormStatus(formId, null, newRemark);
-        
-        if (result.success) {
-          // Update form in the list with new remark
-          setForms(forms.map(form => 
-            form.id === formId 
-              ? { ...form, remarks: newRemark } 
-              : form
-          ));
-          
-          // Reset dropdown value
-          setDropdownValues(prev => ({
-            ...prev,
-            [formId]: ''
-          }));
-          
-          // Show success toast
-          toast.success(`Remark updated to ${newRemark}`, {
-            position: "top-right",
-            autoClose: 3000
-          });
-        } else {
-          toast.error("Failed to update remark: " + (result.error || "Unknown error"));
-        }
-      } 
-      else {
-        // For all other remarks, move to history by marking as completed
-        const result = await updateFormStatus(formId, 'Completed', newRemark);
-        
-        if (result.success) {
-          // Remove the form from the list
-          setForms(forms.filter(form => form.id !== formId));
-          
-          // Remove from dropdown values
-          const newDropdownValues = {...dropdownValues};
-          delete newDropdownValues[formId];
-          setDropdownValues(newDropdownValues);
-          
-          // Show success toast
-          toast.success(`Session moved to history as ${newRemark}`, {
-            position: "top-right",
-            autoClose: 3000
-          });
-        } else {
-          toast.error("Failed to update status: " + (result.error || "Unknown error"));
-        }
+ // Update handleRemarkChange in SubmittedFormsManagement
+// Update handleRemarkChange in SubmittedFormsManagement
+const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessionNotes = null, isDropdownChangeOnly = false) => {
+  // Add debugging logs
+  console.log("handleRemarkChange called with:", { formId, newRemark, followUpDate, sessionNotes, isDropdownChangeOnly });
+  
+  // If this is just a dropdown change (not the final submit), just update the state
+  if (isDropdownChangeOnly) {
+    setDropdownValues(prev => ({
+      ...prev,
+      [formId]: newRemark
+    }));
+    return;
+  }
+
+  try {
+    setUpdatingId(formId);
+    
+    // If Follow-up is selected, we need a follow-up date
+    if (newRemark === 'Follow up') {
+      // Check if followUpDate exists and is not empty
+      if (!followUpDate || followUpDate.trim() === '') {
+        console.log("Follow-up date is missing:", followUpDate);
+        toast.error("Please select a follow-up date");
+        return;
       }
-    } catch (error) {
-      console.error("Error updating remark:", error);
-      toast.error("An error occurred: " + error.message);
-    } finally {
-      setUpdatingId(null);
+      
+      console.log("Proceeding with follow-up, date:", followUpDate);
+      
+      // Create an object with additional data to pass to updateFormStatus
+      const additionalData = {
+        followUpDate: followUpDate
+      };
+      
+      if (sessionNotes && sessionNotes.trim() !== '') {
+        additionalData.sessionNotes = sessionNotes;
+      }
+      
+      // Update the form with remark and additional data
+      const result = await updateFormStatus(formId, null, newRemark, additionalData);
+      
+      if (result.success) {
+        // Update form in the list with new remark and follow-up date
+        setForms(forms.map(form => 
+          form.id === formId 
+            ? { 
+                ...form, 
+                remarks: newRemark,
+                followUpDate: followUpDate,
+                sessionNotes: sessionNotes || form.sessionNotes
+              } 
+            : form
+        ));
+        
+        // Reset dropdown value
+        setDropdownValues(prev => ({
+          ...prev,
+          [formId]: ''
+        }));
+        
+        // Show success toast
+        toast.success(`Follow-up scheduled for ${new Date(followUpDate).toLocaleDateString()}`, {
+          position: "top-right",
+          autoClose: 3000
+        });
+      } else {
+        toast.error("Failed to update remark: " + (result.error || "Unknown error"));
+      }
+    } 
+    else {
+      // For all other remarks, move to history by marking as completed
+      const additionalData = {};
+      if (sessionNotes && sessionNotes.trim() !== '') {
+        additionalData.sessionNotes = sessionNotes;
+      }
+      
+      const result = await updateFormStatus(formId, 'Completed', newRemark, additionalData);
+      
+      if (result.success) {
+        // Remove the form from the list
+        setForms(forms.filter(form => form.id !== formId));
+        
+        // Remove from dropdown values
+        const newDropdownValues = {...dropdownValues};
+        delete newDropdownValues[formId];
+        setDropdownValues(newDropdownValues);
+        
+        // Show success toast
+        toast.success(`Session moved to history as ${newRemark}`, {
+          position: "top-right",
+          autoClose: 3000
+        });
+      } else {
+        toast.error("Failed to update status: " + (result.error || "Unknown error"));
+      }
     }
-  };
+  } catch (error) {
+    console.error("Error updating remark:", error);
+    toast.error("An error occurred: " + error.message);
+  } finally {
+    setUpdatingId(null);
+  }
+};
 
   // Filter forms by referral type
   const nonReferralForms = forms.filter(form => !form.isReferral);
@@ -549,23 +591,18 @@ const getDepartmentFromCourse = (courseCode) => {
       </div>
       
       {/* Student Details Modal */}
-      {isModalOpen && selectedStudent && (
-        <StudentDetailsModal
-          student={selectedStudent}
-          onClose={closeModal}
-          handleRemarkChange={(formId, remark) => {
-            // Update dropdown value first
-            setDropdownValues(prev => ({
-              ...prev,
-              [formId]: remark
-            }));
-            // Then process the change
-            handleRemarkChange(formId, remark);
-          }}
-          updatingId={updatingId}
-          dropdownValue={dropdownValues[selectedStudent.id] || ''}
-        />
-      )}
+{isModalOpen && selectedStudent && (
+  <StudentDetailsModal
+    student={selectedStudent}
+    onClose={closeModal}
+    handleRemarkChange={(formId, remark, followUpDate, sessionNotes, isDropdownChangeOnly) => {
+      // Make sure all parameters are passed through
+      handleRemarkChange(formId, remark, followUpDate, sessionNotes, isDropdownChangeOnly);
+    }}
+    updatingId={updatingId}
+    dropdownValue={dropdownValues[selectedStudent.id] || ''}
+  />
+)}
     </div>
   );
 }

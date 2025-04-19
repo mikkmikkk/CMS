@@ -122,14 +122,6 @@ export const getStudentInterviewForms = async () => {
   }
 };
 
-/**
- * Updates the status and remarks of a student interview form in Firestore.
- * @param {string} formId - The ID of the form to update.
- * @param {string} status - The new status (e.g., "Reviewed", "Rescheduled").
- * @param {string} remarks - Additional remarks for the update.
- * @param {Object} additionalData - Any additional fields to update in the document.
- * @returns {Object} - Success status or error message.
- */
 export const updateFormStatus = async (formId, status, remarks, additionalData = {}) => {
   try {
     // Check if the user is an admin
@@ -156,16 +148,14 @@ export const updateFormStatus = async (formId, status, remarks, additionalData =
     const oldRemarks = formData.remarks;
     const userId = formData.userId;
 
-    // Prepare update data
+    // Prepare update data with additional data included
     const updateData = {
       updatedAt: new Date().toISOString(),
       previousStatus: oldStatus, // Store previous status for reference
-      ...additionalData
+      ...additionalData // This will include followUpDate and sessionNotes if provided
     };
 
     // Add status if provided (moving to history)
-    // If remarks are provided (except Follow up) and no status is provided, 
-    // set status to 'Completed' to move to history
     if (status) {
       updateData.status = status;
     } else if (remarks && remarks !== 'Follow up' && remarks !== oldRemarks) {
@@ -177,19 +167,29 @@ export const updateFormStatus = async (formId, status, remarks, additionalData =
       updateData.remarks = remarks;
     }
 
+    console.log("Updating document with:", updateData);
+    
     // Update the document in Firestore
     await updateDoc(formRef, updateData);
 
     // Send notification if status changed and userId exists
     if (status && status !== oldStatus && userId) {
-      await notifyStatusChange(formId, status, userId, formData, additionalData);
+      await notifyStatusChange(formId, status, userId, formData, {
+        followUpDate,
+        sessionNotes
+      });
     } 
     // Send notification for remarks change that moves to history
-    else if (remarks && remarks !== oldRemarks && remarks !== 'Follow up' && userId) {
-      await notifyStatusChange(formId, 'Completed', userId, {
-        ...formData,
-        remarksChange: remarks
-      }, additionalData);
+    else if (remarks && remarks !== oldRemarks && userId) {
+      if (remarks === 'Follow up' && followUpDate) {
+        // Special notification for follow-up
+        await notifyFollowUp(formId, userId, formData, followUpDate);
+      } else if (remarks !== 'Follow up') {
+        await notifyStatusChange(formId, 'Completed', userId, {
+          ...formData,
+          remarksChange: remarks
+        }, { sessionNotes });
+      }
     }
 
     return { success: true };
@@ -199,6 +199,33 @@ export const updateFormStatus = async (formId, status, remarks, additionalData =
   }
 };
 
+/**
+ * Sends a notification about a follow-up appointment
+ * @param {string} formId - The form ID
+ * @param {string} userId - The user ID to notify
+ * @param {Object} formData - The current form data
+ * @param {string} followUpDate - The scheduled follow-up date
+ * @returns {Object} - Success status or error message
+ */
+export const notifyFollowUp = async (formId, userId, formData, followUpDate) => {
+  try {
+    const formattedDate = new Date(followUpDate).toLocaleDateString();
+    
+    return await sendNotificationToUser(
+      userId,
+      'Follow-up Appointment Scheduled',
+      `A follow-up appointment has been scheduled for ${formattedDate}. Please check your calendar.`,
+      {
+        type: 'FOLLOW_UP',
+        formId: formId,
+        followUpDate: followUpDate
+      }
+    );
+  } catch (error) {
+    console.error('Error sending follow-up notification:', error);
+    return { success: false, error: error.message };
+  }
+};
 
 /**
  * Updates a session's status
