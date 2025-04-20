@@ -152,12 +152,15 @@ export const updateFormStatus = async (formId, status, remarks, additionalData =
     const updateData = {
       updatedAt: new Date().toISOString(),
       previousStatus: oldStatus, // Store previous status for reference
-      ...additionalData // This will include followUpDate and sessionNotes if provided
+      ...additionalData // This will include followUpDate, sessionNotes, and status if provided
     };
 
     // Add status if provided (moving to history)
     if (status) {
       updateData.status = status;
+    } else if (additionalData.status) {
+      // Use status from additionalData if provided
+      updateData.status = additionalData.status;
     } else if (remarks && remarks !== 'Follow up' && remarks !== oldRemarks) {
       updateData.status = 'Completed';
     }
@@ -172,23 +175,61 @@ export const updateFormStatus = async (formId, status, remarks, additionalData =
     // Update the document in Firestore
     await updateDoc(formRef, updateData);
 
-    // Send notification if status changed and userId exists
-    if (status && status !== oldStatus && userId) {
-      await notifyStatusChange(formId, status, userId, formData, {
-        followUpDate,
-        sessionNotes
-      });
-    } 
-    // Send notification for remarks change that moves to history
-    else if (remarks && remarks !== oldRemarks && userId) {
-      if (remarks === 'Follow up' && followUpDate) {
+    // Send notification based on the type of update
+    if (userId) {
+      // STAGE 1: Initial Confirmation
+      if (status === 'Confirmed' && oldStatus !== 'Confirmed' && !additionalData.isFollowUp) {
+        await sendNotificationToUser(
+          userId,
+          'Appointment Confirmed',
+          `Your counseling appointment has been confirmed. Please check your schedule for details.`,
+          {
+            type: 'APPOINTMENT_CONFIRMED',
+            formId: formId
+          }
+        );
+      }
+      // STAGE 2: Follow-up Scheduling
+      else if (remarks === 'Follow up' && additionalData.followUpDate) {
         // Special notification for follow-up
-        await notifyFollowUp(formId, userId, formData, followUpDate);
-      } else if (remarks !== 'Follow up') {
-        await notifyStatusChange(formId, 'Completed', userId, {
-          ...formData,
-          remarksChange: remarks
-        }, { sessionNotes });
+        await notifyFollowUp(
+          formId, 
+          userId, 
+          formData, 
+          additionalData.followUpDate, 
+          additionalData.followUpTime
+        );
+      }
+      // STAGE 3: Post-Session Update
+      else if (status === 'Completed' && remarks) {
+        await notifyStatusChange(
+          formId, 
+          'Completed', 
+          userId, 
+          {
+            ...formData,
+            remarksChange: remarks
+          }, 
+          { 
+            sessionNotes: additionalData.sessionNotes || '' 
+          }
+        );
+      }
+      // Other status changes
+      else if ((status || additionalData.status) && (status || additionalData.status) !== oldStatus) {
+        const notificationData = {
+          followUpDate: additionalData.followUpDate || null,
+          followUpTime: additionalData.followUpTime || null,
+          sessionNotes: additionalData.sessionNotes || ''
+        };
+        
+        await notifyStatusChange(
+          formId, 
+          status || additionalData.status, 
+          userId, 
+          formData, 
+          notificationData
+        );
       }
     }
 
@@ -207,18 +248,26 @@ export const updateFormStatus = async (formId, status, remarks, additionalData =
  * @param {string} followUpDate - The scheduled follow-up date
  * @returns {Object} - Success status or error message
  */
-export const notifyFollowUp = async (formId, userId, formData, followUpDate) => {
+export const notifyFollowUp = async (formId, userId, formData, followUpDate, followUpTime = null) => {
   try {
+    if (!followUpDate) {
+      console.warn('Follow-up notification attempted without a date');
+      return { success: false, error: "Follow-up date is required" };
+    }
+    
     const formattedDate = new Date(followUpDate).toLocaleDateString();
+    const timeMessage = followUpTime ? ` at ${followUpTime}` : '';
     
     return await sendNotificationToUser(
       userId,
-      'Follow-up Appointment Scheduled',
-      `A follow-up appointment has been scheduled for ${formattedDate}. Please check your calendar.`,
+      'Follow-up Appointment Confirmed',
+      `A follow-up appointment has been scheduled and confirmed for ${formattedDate}${timeMessage}. Please attend at the scheduled time.`,
       {
         type: 'FOLLOW_UP',
         formId: formId,
-        followUpDate: followUpDate
+        followUpDate: followUpDate,
+        followUpTime: followUpTime,
+        autoConfirmed: true
       }
     );
   } catch (error) {

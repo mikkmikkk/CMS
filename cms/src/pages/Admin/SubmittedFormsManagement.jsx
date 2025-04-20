@@ -14,6 +14,11 @@ function SubmittedFormsManagement() {
   const [updatingId, setUpdatingId] = useState(null);
   // Create a separate state for dropdown values
   const [dropdownValues, setDropdownValues] = useState({});
+  const [showFollowUpScheduler, setShowFollowUpScheduler] = useState(false);
+  const [currentFormId, setCurrentFormId] = useState(null);
+  // Add these with your other state variables
+  const [followUpDate, setFollowUpDate] = useState('');
+  const [followUpTime, setFollowUpTime] = useState('');
 
   // Helper function to add proper suffix to year number
   const getYearSuffix = (num) => {
@@ -136,6 +141,19 @@ function SubmittedFormsManagement() {
       setLoading(false);
     }
   };
+
+// When Follow-up is selected from dropdown
+const handleFollowUpSelection = (formId) => {
+  setCurrentFormId(formId);
+  setShowFollowUpScheduler(true);
+};
+
+// When follow-up is scheduled
+const handleFollowUpScheduled = (date, time) => {
+  handleRemarkChange(currentFormId, 'Follow up', date, '', false, time);
+  setShowFollowUpScheduler(false);
+  setCurrentFormId(null);
+};
 
  // Helper function to determine department from course code
 const getDepartmentFromCourse = (courseCode) => {
@@ -286,9 +304,9 @@ const getDepartmentFromCourse = (courseCode) => {
   // Handler for when a remark is selected
  // Update handleRemarkChange in SubmittedFormsManagement
 // Update handleRemarkChange in SubmittedFormsManagement
-const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessionNotes = null, isDropdownChangeOnly = false) => {
+const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessionNotes = '', isDropdownChangeOnly = false, followUpTime = null) => {
   // Add debugging logs
-  console.log("handleRemarkChange called with:", { formId, newRemark, followUpDate, sessionNotes, isDropdownChangeOnly });
+  console.log("handleRemarkChange called with:", { formId, newRemark, followUpDate, sessionNotes, isDropdownChangeOnly, followUpTime });
   
   // If this is just a dropdown change (not the final submit), just update the state
   if (isDropdownChangeOnly) {
@@ -302,8 +320,49 @@ const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessio
   try {
     setUpdatingId(formId);
     
-    // If Follow-up is selected, we need a follow-up date
-    if (newRemark === 'Follow up') {
+    // Find the current form to determine what stage we're in
+    const currentForm = forms.find(form => form.id === formId);
+    
+    // STAGE 1: Initial Confirmation (change status to Confirmed)
+    if (newRemark === 'Confirmed' && (!currentForm.status || currentForm.status === 'Pending')) {
+      const additionalData = {
+        status: 'Confirmed',
+        confirmedAt: new Date().toISOString()
+      };
+      
+      if (sessionNotes && sessionNotes.trim() !== '') {
+        additionalData.sessionNotes = sessionNotes;
+      }
+      
+      const result = await updateFormStatus(formId, 'Confirmed', null, additionalData);
+      
+      if (result.success) {
+        // Update form in the list with new status
+        setForms(forms.map(form => 
+          form.id === formId 
+            ? { 
+                ...form, 
+                status: 'Confirmed',
+                sessionNotes: sessionNotes || form.sessionNotes
+              } 
+            : form
+        ));
+        
+        toast.success("Appointment confirmed successfully!", {
+          position: "top-right",
+          autoClose: 3000
+        });
+        
+        if (isModalOpen) {
+          closeModal();
+        }
+      } else {
+        toast.error("Failed to confirm appointment: " + (result.error || "Unknown error"));
+      }
+    }
+    
+    // STAGE 2: Follow-up Scheduling
+    else if (newRemark === 'Follow up') {
       // Check if followUpDate exists and is not empty
       if (!followUpDate || followUpDate.trim() === '') {
         console.log("Follow-up date is missing:", followUpDate);
@@ -311,11 +370,27 @@ const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessio
         return;
       }
       
-      console.log("Proceeding with follow-up, date:", followUpDate);
+      // Check if followUpTime exists and is not empty
+      if (!followUpTime || followUpTime.trim() === '') {
+        console.log("Follow-up time is missing:", followUpTime);
+        toast.error("Please select a follow-up time");
+        return;
+      }
+      
+      console.log("Proceeding with follow-up, date:", followUpDate, "time:", followUpTime);
+      
+      // Combine date and time into a single datetime string
+      const followUpDateTime = `${followUpDate}T${followUpTime}`;
       
       // Create an object with additional data to pass to updateFormStatus
       const additionalData = {
-        followUpDate: followUpDate
+        followUpDate: followUpDate,
+        followUpTime: followUpTime,
+        followUpDateTime: followUpDateTime,
+        status: 'Confirmed', // Automatically confirm the follow-up
+        remarks: newRemark,
+        isFollowUp: true,
+        autoConfirmed: true
       };
       
       if (sessionNotes && sessionNotes.trim() !== '') {
@@ -323,16 +398,20 @@ const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessio
       }
       
       // Update the form with remark and additional data
+      // We're not moving it to history, so pass null as the status
       const result = await updateFormStatus(formId, null, newRemark, additionalData);
       
       if (result.success) {
-        // Update form in the list with new remark and follow-up date
+        // Update form in the list with new remark and follow-up date/time
         setForms(forms.map(form => 
           form.id === formId 
             ? { 
                 ...form, 
                 remarks: newRemark,
                 followUpDate: followUpDate,
+                followUpTime: followUpTime,
+                followUpDateTime: followUpDateTime,
+                status: 'Confirmed', // Update status to Confirmed
                 sessionNotes: sessionNotes || form.sessionNotes
               } 
             : form
@@ -344,15 +423,24 @@ const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessio
           [formId]: ''
         }));
         
-        // Show success toast
-        toast.success(`Follow-up scheduled for ${new Date(followUpDate).toLocaleDateString()}`, {
+        // Show success toast with formatted date and time
+        const formattedDate = new Date(followUpDate).toLocaleDateString();
+        const formattedTime = followUpTime;
+        toast.success(`Follow-up scheduled for ${formattedDate} at ${formattedTime}`, {
           position: "top-right",
           autoClose: 3000
         });
+        
+        // Close the modal if it's open
+        if (isModalOpen) {
+          closeModal();
+        }
       } else {
-        toast.error("Failed to update remark: " + (result.error || "Unknown error"));
+        toast.error("Failed to schedule follow-up: " + (result.error || "Unknown error"));
       }
     } 
+    
+    // STAGE 3: Post-Session Update (Attended, No Show, etc.)
     else {
       // For all other remarks, move to history by marking as completed
       const additionalData = {};
@@ -376,6 +464,11 @@ const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessio
           position: "top-right",
           autoClose: 3000
         });
+        
+        // Close the modal if it's open
+        if (isModalOpen) {
+          closeModal();
+        }
       } else {
         toast.error("Failed to update status: " + (result.error || "Unknown error"));
       }
@@ -551,7 +644,7 @@ const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessio
                       {student.referral}
                     </td>
                     <td className="py-3 px-4">
-                      <select
+                    <select
                         value={dropdownValues[student.id] || ''}
                         onChange={(e) => {
                           if (e.target.value) {
@@ -560,8 +653,10 @@ const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessio
                               ...prev,
                               [student.id]: e.target.value
                             }));
-                            // Then process the change
-                            handleRemarkChange(student.id, e.target.value);
+                            
+                            // Don't immediately process the change for the dropdown in the table
+                            // Only update the dropdown value, not the actual form
+                            handleRemarkChange(student.id, e.target.value, null, null, true);
                           }
                         }}
                         className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -595,15 +690,78 @@ const handleRemarkChange = async (formId, newRemark, followUpDate = null, sessio
   <StudentDetailsModal
     student={selectedStudent}
     onClose={closeModal}
-    handleRemarkChange={(formId, remark, followUpDate, sessionNotes, isDropdownChangeOnly) => {
+    handleRemarkChange={(formId, remark, followUpDate, sessionNotes, isDropdownChangeOnly, followUpTime) => {
       // Make sure all parameters are passed through
-      handleRemarkChange(formId, remark, followUpDate, sessionNotes, isDropdownChangeOnly);
+      handleRemarkChange(formId, remark, followUpDate, sessionNotes, isDropdownChangeOnly, followUpTime);
     }}
     updatingId={updatingId}
     dropdownValue={dropdownValues[selectedStudent.id] || ''}
   />
 )}
+
+{/* Follow-up Scheduler Modal */}
+{showFollowUpScheduler && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white w-96 rounded-lg shadow-lg p-6 relative">
+      <button
+        onClick={() => setShowFollowUpScheduler(false)}
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+      >
+        <span className="sr-only">Close</span>
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      
+      <h2 className="text-xl font-bold mb-4">Schedule Follow-up</h2>
+      
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Date</label>
+        <input
+          type="date"
+          className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          min={new Date().toISOString().split('T')[0]}
+          onChange={(e) => setFollowUpDate(e.target.value)}
+          required
+        />
+      </div>
+      
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Time</label>
+        <input
+          type="time"
+          className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          onChange={(e) => setFollowUpTime(e.target.value)}
+          required
+        />
+      </div>
+      
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => {
+            if (followUpDate && followUpTime) {
+              handleFollowUpScheduled(followUpDate, followUpTime);
+            } else {
+              toast.error("Please select both date and time");
+            }
+          }}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+        >
+          Schedule Follow-up
+        </button>
+        <button
+          onClick={() => setShowFollowUpScheduler(false)}
+          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
+  </div>
+)}
+</div>
+
+    
   );
 }
 
