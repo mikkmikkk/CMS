@@ -132,35 +132,69 @@ export const chartColors = {
   };
   
   // Filter forms by timeframe
-  export const filterFormsByTimeframe = (forms, timeframe) => {
-    const now = new Date();
-    let startDate;
-    
-    switch (timeframe) {
-      case 'thisMonth':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      case 'lastMonth':
-        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const endDate = new Date(now.getFullYear(), now.getMonth(), 0);
-        return forms.filter(form => {
-          const formDate = form.submissionDate ? new Date(form.submissionDate) : null;
-          return formDate && formDate >= startDate && formDate <= endDate;
-        });
-      case 'past3Months':
-        startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-        break;
-      case 'allTime':
-        return forms; // Return all forms without date filtering
-      default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    }
-    
-    return forms.filter(form => {
-      const formDate = form.submissionDate ? new Date(form.submissionDate) : null;
-      return formDate && formDate >= startDate;
-    });
-  };
+  // Filter forms by timeframe
+export const filterFormsByTimeframe = (forms, timeframe) => {
+  const now = new Date();
+  let startDate;
+  let endDate;
+  
+  // Get start of current week (Sunday)
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+  
+  // Get start of last week
+  const startOfLastWeek = new Date(startOfWeek);
+  startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+  
+  // Get end of last week
+  const endOfLastWeek = new Date(startOfWeek);
+  endOfLastWeek.setSeconds(endOfLastWeek.getSeconds() - 1);
+  
+  switch (timeframe) {
+    case 'thisWeek':
+      startDate = startOfWeek;
+      break;
+      
+    case 'lastWeek':
+      startDate = startOfLastWeek;
+      endDate = endOfLastWeek;
+      return forms.filter(form => {
+        const formDate = form.submissionDate ? new Date(form.submissionDate) : 
+                        (form.dateTime ? new Date(form.dateTime) : null);
+        return formDate && formDate >= startDate && formDate <= endDate;
+      });
+      
+    case 'thisMonth':
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      break;
+      
+    case 'lastMonth':
+      startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      return forms.filter(form => {
+        const formDate = form.submissionDate ? new Date(form.submissionDate) : 
+                        (form.dateTime ? new Date(form.dateTime) : null);
+        return formDate && formDate >= startDate && formDate <= endDate;
+      });
+      
+    case 'past3Months':
+      startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+      break;
+      
+    case 'allTime':
+      return forms; // Return all forms without date filtering
+      
+    default:
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  
+  return forms.filter(form => {
+    const formDate = form.submissionDate ? new Date(form.submissionDate) : 
+                    (form.dateTime ? new Date(form.dateTime) : null);
+    return formDate && formDate >= startDate;
+  });
+};
   
   // Filter forms by college
   export const filterFormsByCollege = (forms, college, getDepartmentFromCourse) => {
