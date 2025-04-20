@@ -41,8 +41,15 @@ function Schedule() {
       
       const forms = result.forms || [];
       
-      // Filter forms with dateTime or scheduledDate
-      const sessionsData = forms.filter(form => form.dateTime || form.submissionDate);
+      // Filter forms with dateTime, submissionDate, or followUpDate
+      const sessionsData = forms.filter(form => 
+        form.dateTime || form.submissionDate || form.followUpDate
+      );
+      
+      // Log for debugging
+      console.log("All sessions data:", sessionsData);
+      console.log("Sessions with followUpDate:", sessionsData.filter(s => s.followUpDate));
+      
       setAllSessions(sessionsData);
       
       // Initially filter by current date
@@ -60,24 +67,50 @@ function Schedule() {
   const filterSessionsByDate = (selectedDate) => {
     // Format the selected date as YYYY-MM-DD for comparison
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    console.log("Filtering sessions for date:", dateStr);
     
     // Filter sessions for the selected date
     const filteredSessions = allSessions.filter(session => {
+      // If this is a follow-up session, only show it on the follow-up date
+      if (session.remarks === 'Follow up' && session.followUpDate) {
+        try {
+          const followUpDate = new Date(session.followUpDate);
+          const followUpDateStr = format(followUpDate, 'yyyy-MM-dd');
+          
+          // Only return true if this is the follow-up date
+          return followUpDateStr === dateStr;
+        } catch (e) {
+          console.error("Error parsing followUpDate:", e);
+          return false;
+        }
+      }
+      
+      // For non-follow-up sessions or sessions without a follow-up date set:
+      
       // Check dateTime field (this will include rescheduled sessions)
       if (session.dateTime) {
-        const sessionDate = new Date(session.dateTime);
-        return format(sessionDate, 'yyyy-MM-dd') === dateStr;
+        try {
+          const sessionDate = new Date(session.dateTime);
+          return format(sessionDate, 'yyyy-MM-dd') === dateStr;
+        } catch (e) {
+          console.error("Error parsing dateTime:", e);
+        }
       }
       
       // Check submissionDate field as fallback
       if (session.submissionDate) {
-        const submissionDate = new Date(session.submissionDate);
-        return format(submissionDate, 'yyyy-MM-dd') === dateStr;
+        try {
+          const submissionDate = new Date(session.submissionDate);
+          return format(submissionDate, 'yyyy-MM-dd') === dateStr;
+        } catch (e) {
+          console.error("Error parsing submissionDate:", e);
+        }
       }
       
       return false;
     });
     
+    console.log(`Found ${filteredSessions.length} sessions for ${dateStr}`);
     setSessions(filteredSessions);
     setSelectedSession(null); // Reset selected session when date changes
   };
@@ -99,6 +132,11 @@ function Schedule() {
   };
 
   const getSessionTypeLabel = (session) => {
+    // If this is a follow-up session, show it as such
+    if (session.remarks === 'Follow up' || 
+        (session.followUpDate && format(new Date(session.followUpDate), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))) {
+      return "Follow-up";
+    }
     if (session.isReferral === true) return "Referral";
     if (session.type === "Referral") return "Referral";
     return "Walk-in";
@@ -109,8 +147,10 @@ function Schedule() {
       case 'Confirmed': return 'bg-green-100 text-green-800';
       case 'Completed': return 'bg-blue-100 text-blue-800';
       case 'Cancelled': return 'bg-red-100 text-red-800';
-      case 'No-show': return 'bg-orange-100 text-orange-800';
+      case 'No-show': 
+      case 'No Show': return 'bg-orange-100 text-orange-800';
       case 'Rescheduled': return 'bg-purple-100 text-purple-800';
+      case 'Follow up': return 'bg-purple-100 text-purple-800';
       default: return 'bg-yellow-100 text-yellow-800'; // Pending
     }
   };
@@ -215,19 +255,43 @@ function Schedule() {
         const isCurrentDay = day ? isToday(day) : false;
         const isSelected = day ? isSameDay(day, date) : false;
         
-        // Check if this day has sessions
-        const hasSession = day && allSessions.some(session => {
-          if (session.dateTime) {
-            const sessionDate = new Date(session.dateTime);
-            return isSameDay(sessionDate, day);
-          }
-          if (session.submissionDate) {
-            const submissionDate = new Date(session.submissionDate);
-            return isSameDay(submissionDate, day);
-          }
-          return false;
-        });
-        
+        // Check if this day has sessions (including follow-ups)
+   
+          const hasSession = day && allSessions.some(session => {
+            // For follow-up sessions, only show dot on the follow-up date
+            if (session.remarks === 'Follow up' && session.followUpDate) {
+              try {
+                const followUpDate = new Date(session.followUpDate);
+                return isSameDay(followUpDate, day);
+              } catch (e) {
+                console.error("Error parsing followUpDate:", e);
+                return false;
+              }
+            }
+            
+            // For non-follow-up sessions:
+            
+            // Check regular session dates
+            if (session.dateTime) {
+              try {
+                const sessionDate = new Date(session.dateTime);
+                return isSameDay(sessionDate, day);
+              } catch (e) {
+                console.error("Error parsing dateTime:", e);
+              }
+            }
+            
+            if (session.submissionDate) {
+              try {
+                const submissionDate = new Date(session.submissionDate);
+                return isSameDay(submissionDate, day);
+              } catch (e) {
+                console.error("Error parsing submissionDate:", e);
+              }
+            }
+            
+            return false;
+          });
         daysInWeek.push(
           <div
             key={i}
@@ -348,6 +412,11 @@ function Schedule() {
                         <h3 className="font-semibold">{session.studentName || 'Unknown Student'}</h3>
                         <p className="text-sm text-gray-600">{session.courseYearSection || 'No course info'}</p>
                         <p className="text-sm text-gray-600">{getSessionTime(session)}</p>
+                        {session.remarks === 'Follow up' && (
+                          <p className="text-sm text-purple-600 font-medium">
+                            Follow-up Appointment
+                          </p>
+                        )}
                         {session.status === 'Rescheduled' && (
                           <p className="text-sm text-purple-600 font-medium">
                             {session.remarks?.includes('Rescheduled to') ? session.remarks : 'Rescheduled'}
@@ -355,8 +424,8 @@ function Schedule() {
                         )}
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className={`text-xs px-2 py-1 rounded-full ${getStatusClass(session.status || 'Pending')}`}>
-                          {session.status || 'Pending'}
+                        <span className={`text-xs px-2 py-1 rounded-full ${getStatusClass(session.remarks || session.status || 'Pending')}`}>
+                          {session.remarks === 'Follow up' ? 'Follow up' : (session.status || 'Pending')}
                         </span>
                         <span className="text-xs mt-1">
                           {getSessionTypeLabel(session)}
@@ -376,15 +445,33 @@ function Schedule() {
                   <p><strong>Course:</strong> {selectedSession.courseYearSection || 'N/A'}</p>
                   <p><strong>Contact:</strong> {selectedSession.contactNo || selectedSession.email || 'N/A'}</p>
                   <p><strong>Time:</strong> {getSessionTime(selectedSession)}</p>
-                  <p><strong>Status:</strong> <span className={`px-2 py-1 rounded-full ${getStatusClass(selectedSession.status || 'Pending')}`}>
-                    {selectedSession.status || 'Pending'}
-                  </span></p>
+                  
+                  {selectedSession.remarks === 'Follow up' ? (
+                    <p><strong>Status:</strong> <span className={`px-2 py-1 rounded-full ${getStatusClass('Follow up')}`}>
+                      Follow-up
+                    </span></p>
+                  ) : (
+                    <p><strong>Status:</strong> <span className={`px-2 py-1 rounded-full ${getStatusClass(selectedSession.status || 'Pending')}`}>
+                      {selectedSession.status || 'Pending'}
+                    </span></p>
+                  )}
+                  
+                  {selectedSession.followUpDate && (
+                    <p><strong>Follow-up Date:</strong> {new Date(selectedSession.followUpDate).toLocaleDateString()}</p>
+                  )}
+                  
+                  {selectedSession.sessionNotes && (
+                    <p><strong>Session Notes:</strong> {selectedSession.sessionNotes}</p>
+                  )}
+                  
                   {selectedSession.isReferral && (
                     <p><strong>Referred by:</strong> {selectedSession.referredBy || selectedSession.facultyName || 'N/A'}</p>
                   )}
-                  {selectedSession.remarks && (
+                  
+                  {selectedSession.remarks && selectedSession.remarks !== 'Follow up' && (
                     <p><strong>Remarks:</strong> {selectedSession.remarks}</p>
                   )}
+                  
                   <div className="mt-4 text-gray-500 text-xs italic">
                     <p>* To update session status, please go to the Submissions page</p>
                   </div>

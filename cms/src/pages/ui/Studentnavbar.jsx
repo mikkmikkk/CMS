@@ -17,9 +17,7 @@ export default function StudentNavbar() {
           <a href="#" onClick={() => navigate("/Request")} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">
             Request
           </a>
-          <a href="#" onClick={openProfile} className="text-gray-700 font-medium hover:text-[#3A0323] transition-colors">
-            Profile
-          </a>
+         
         </div>
         <button onClick={() => navigate("/")} className="bg-[#3A0323] hover:bg-[#2a021a] text-white px-6 py-3 rounded-md transition-colors">
           Logout

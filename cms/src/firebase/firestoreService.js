@@ -122,14 +122,6 @@ export const getStudentInterviewForms = async () => {
   }
 };
 
-/**
- * Updates the status and remarks of a student interview form in Firestore.
- * @param {string} formId - The ID of the form to update.
- * @param {string} status - The new status (e.g., "Reviewed", "Rescheduled").
- * @param {string} remarks - Additional remarks for the update.
- * @param {Object} additionalData - Any additional fields to update in the document.
- * @returns {Object} - Success status or error message.
- */
 export const updateFormStatus = async (formId, status, remarks, additionalData = {}) => {
   try {
     // Check if the user is an admin
@@ -156,18 +148,19 @@ export const updateFormStatus = async (formId, status, remarks, additionalData =
     const oldRemarks = formData.remarks;
     const userId = formData.userId;
 
-    // Prepare update data
+    // Prepare update data with additional data included
     const updateData = {
       updatedAt: new Date().toISOString(),
       previousStatus: oldStatus, // Store previous status for reference
-      ...additionalData
+      ...additionalData // This will include followUpDate, sessionNotes, and status if provided
     };
 
     // Add status if provided (moving to history)
-    // If remarks are provided (except Follow up) and no status is provided, 
-    // set status to 'Completed' to move to history
     if (status) {
       updateData.status = status;
+    } else if (additionalData.status) {
+      // Use status from additionalData if provided
+      updateData.status = additionalData.status;
     } else if (remarks && remarks !== 'Follow up' && remarks !== oldRemarks) {
       updateData.status = 'Completed';
     }
@@ -177,19 +170,67 @@ export const updateFormStatus = async (formId, status, remarks, additionalData =
       updateData.remarks = remarks;
     }
 
+    console.log("Updating document with:", updateData);
+    
     // Update the document in Firestore
     await updateDoc(formRef, updateData);
 
-    // Send notification if status changed and userId exists
-    if (status && status !== oldStatus && userId) {
-      await notifyStatusChange(formId, status, userId, formData, additionalData);
-    } 
-    // Send notification for remarks change that moves to history
-    else if (remarks && remarks !== oldRemarks && remarks !== 'Follow up' && userId) {
-      await notifyStatusChange(formId, 'Completed', userId, {
-        ...formData,
-        remarksChange: remarks
-      }, additionalData);
+    // Send notification based on the type of update
+    if (userId) {
+      // STAGE 1: Initial Confirmation
+      if (status === 'Confirmed' && oldStatus !== 'Confirmed' && !additionalData.isFollowUp) {
+        await sendNotificationToUser(
+          userId,
+          'Appointment Confirmed',
+          `Your counseling appointment has been confirmed. Please check your schedule for details.`,
+          {
+            type: 'APPOINTMENT_CONFIRMED',
+            formId: formId
+          }
+        );
+      }
+      // STAGE 2: Follow-up Scheduling
+      else if (remarks === 'Follow up' && additionalData.followUpDate) {
+        // Special notification for follow-up
+        await notifyFollowUp(
+          formId, 
+          userId, 
+          formData, 
+          additionalData.followUpDate, 
+          additionalData.followUpTime
+        );
+      }
+      // STAGE 3: Post-Session Update
+      else if (status === 'Completed' && remarks) {
+        await notifyStatusChange(
+          formId, 
+          'Completed', 
+          userId, 
+          {
+            ...formData,
+            remarksChange: remarks
+          }, 
+          { 
+            sessionNotes: additionalData.sessionNotes || '' 
+          }
+        );
+      }
+      // Other status changes
+      else if ((status || additionalData.status) && (status || additionalData.status) !== oldStatus) {
+        const notificationData = {
+          followUpDate: additionalData.followUpDate || null,
+          followUpTime: additionalData.followUpTime || null,
+          sessionNotes: additionalData.sessionNotes || ''
+        };
+        
+        await notifyStatusChange(
+          formId, 
+          status || additionalData.status, 
+          userId, 
+          formData, 
+          notificationData
+        );
+      }
     }
 
     return { success: true };
@@ -199,6 +240,41 @@ export const updateFormStatus = async (formId, status, remarks, additionalData =
   }
 };
 
+/**
+ * Sends a notification about a follow-up appointment
+ * @param {string} formId - The form ID
+ * @param {string} userId - The user ID to notify
+ * @param {Object} formData - The current form data
+ * @param {string} followUpDate - The scheduled follow-up date
+ * @returns {Object} - Success status or error message
+ */
+export const notifyFollowUp = async (formId, userId, formData, followUpDate, followUpTime = null) => {
+  try {
+    if (!followUpDate) {
+      console.warn('Follow-up notification attempted without a date');
+      return { success: false, error: "Follow-up date is required" };
+    }
+    
+    const formattedDate = new Date(followUpDate).toLocaleDateString();
+    const timeMessage = followUpTime ? ` at ${followUpTime}` : '';
+    
+    return await sendNotificationToUser(
+      userId,
+      'Follow-up Appointment Confirmed',
+      `A follow-up appointment has been scheduled and confirmed for ${formattedDate}${timeMessage}. Please attend at the scheduled time.`,
+      {
+        type: 'FOLLOW_UP',
+        formId: formId,
+        followUpDate: followUpDate,
+        followUpTime: followUpTime,
+        autoConfirmed: true
+      }
+    );
+  } catch (error) {
+    console.error('Error sending follow-up notification:', error);
+    return { success: false, error: error.message };
+  }
+};
 
 /**
  * Updates a session's status
