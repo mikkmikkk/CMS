@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminNavbar from '../ui/adminnavbar';
 import { Dropdown } from 'primereact/dropdown';
@@ -22,7 +21,7 @@ function Reports() {
   const [yearPerCollegesData, setYearPerCollegesData] = useState({});
   const [remarksDistributionData, setRemarksDistributionData] = useState({});
   const [chartOptions, setChartOptions] = useState({});
-  const [selectedMonth, setSelectedMonth] = useState('thisMonth');
+  const [selectedTimeframe, setSelectedTimeframe] = useState('thisMonth');
   const [selectedCollege, setSelectedCollege] = useState('all');
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +37,9 @@ function Reports() {
   });
 
   // Constants for dropdown options
-  const monthOptions = [
+  const timeframeOptions = [
+    { label: 'This Week', value: 'thisWeek' },
+    { label: 'Last Week', value: 'lastWeek' },
     { label: 'This Month', value: 'thisMonth' },
     { label: 'Last Month', value: 'lastMonth' },
     { label: 'Past 3 Months', value: 'past3Months' },
@@ -61,7 +62,7 @@ function Reports() {
 
   useEffect(() => {
     fetchDataAndGenerateReports();
-  }, [selectedMonth, selectedCollege]);
+  }, [selectedTimeframe, selectedCollege]);
 
   const fetchDataAndGenerateReports = async () => {
     try {
@@ -86,8 +87,8 @@ function Reports() {
       
       setReportData(forms);
       
-      // Filter data based on selected month
-      const filteredForms = filterFormsByTimeframe(forms, selectedMonth);
+      // Filter data based on selected timeframe
+      const filteredForms = filterFormsByTimeframe(forms, selectedTimeframe);
       
       // Further filter by college if needed
       const collegeFilteredForms = filterFormsByCollege(filteredForms, selectedCollege, getDepartmentFromCourse);
@@ -127,10 +128,10 @@ function Reports() {
         {/* Filters */}
         <div className="flex justify-end space-x-4 mb-8">
           <Dropdown
-            value={selectedMonth}
-            options={monthOptions}
-            onChange={(e) => setSelectedMonth(e.value)}
-            placeholder="Select a Month"
+            value={selectedTimeframe}
+            options={timeframeOptions}
+            onChange={(e) => setSelectedTimeframe(e.value)}
+            placeholder="Select Timeframe"
             className="w-full md:w-48"
           />
           <Dropdown
