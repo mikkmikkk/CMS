@@ -12,16 +12,13 @@ Counseling Monitoring System (CMS) is designed to simplify and enhance the unive
 
 ## Installation
 
-Install this repo with yarn
-
 ```bash
-  npm install --global yarn
-  cd usams
-  yarn
-  yarn dev
+  cd cms
+  npm install 
+  npm run dev
 ```
     
 ## Acknowledgements
 
- - [Wilfredo Marinay, Jr.](https://github.com/derf567)
+ - [Ralph Dulla](https://github.com/Ralph-Dulla-23)
  - [Micah Espinosa](https://github.com/mikkmikkk)
